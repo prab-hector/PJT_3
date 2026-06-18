@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 from .models import AttendanceLog  # Assuming AttendanceLog handles the check-ins
 
-@login_required
 def home_dashboard(request):
     # Fixed: Changed '-scan_time' to '-timestamp' to match the model field
     recent_scans = AttendanceLog.objects.select_related('teammates').order_by('-timestamp')[:10]
