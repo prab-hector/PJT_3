@@ -21,7 +21,7 @@ def home_dashboard(request):
         'admin_name': admin_name,
         'admin_initials': admin_initials,
     }
-    return render(request, 'homepg.html', context)
+    return render(request, 'users/homepg.html', context)
 
 def register(request):
     if request.method == 'POST':
