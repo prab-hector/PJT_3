@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from .models import Teammates
+from storage.models import Teammates
 import json
 
 # Global application states to track special card processes
