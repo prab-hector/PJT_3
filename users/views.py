@@ -3,6 +3,8 @@ from django.contrib import messages
 from .forms import UserRegisterForm
 from .models import AttendanceLog
 from storage.models import Teammates
+from django.contrib.auth.decorators import login_required
+from .forms import UserRegisterForm, StorageUpdateForm, ProfileUserUpdateForm
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
@@ -63,4 +65,34 @@ def profile(request):
           'records': user_storage_records
      }
      return render(request, 'user/profile.html',context)
+
+@login_required
+def edit_profile(request):
+    # Fetch the specific active storage row item for this user
+    storage_instance = Teammates.objects.filter(author=request.user).first()
+
+    if request.method == 'POST':
+        u_form = ProfileUserUpdateForm(request.POST, instance=request.user)
+        s_form = StorageUpdateForm(request.POST, instance=storage_instance)
+
+        if u_form.is_valid() and s_form.is_valid():
+            u_form.save()
+            
+            # Catch instance creation fallback safety check
+            storage_item = s_form.save(commit=False)
+            if not storage_item.pk:
+                storage_item.author = request.user
+            storage_item.save()
+            
+            messages.success(request, "Your profile fields have been updated successfully!")
+            return redirect('profile')
+    else:
+        u_form = ProfileUserUpdateForm(instance=request.user)
+        s_form = StorageUpdateForm(instance=storage_instance)
+
+    context = {
+        'u_form': u_form,
+        's_form': s_form
+    }
+    return render(request, 'user/edit_profile.html', context)
 

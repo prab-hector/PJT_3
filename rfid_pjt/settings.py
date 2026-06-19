@@ -150,3 +150,11 @@ STATIC_ROOT = BASE_DIR / 'static'
 STATICFILES_DIRS = [
     # BASE_DIR / 'mystaticdir', # Uncomment only if you use an explicit global assets folder
 ]
+
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
