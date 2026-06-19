@@ -12,91 +12,82 @@ REGISTRATION_BUFFER = {}
 REGISTRATION_MODE_ACTIVE = False
 DELETE_MODE_ACTIVE = False
 
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.contrib.auth.models import User
+from storage.models import Teammates, RFIDLog
+import json
+
+# Global application state to store the card pending registration
+REGISTRATION_BUFFER = {}
+
 @csrf_exempt
 def process_rfid(request):
     """
     Core Gateway Endpoint: Receives all raw HTTP POST scan packets from the ESP32 hardware client.
     URL Path: /api/rfid/process/
     """
-    global REGISTRATION_MODE_ACTIVE, DELETE_MODE_ACTIVE, REGISTRATION_BUFFER
+    global REGISTRATION_BUFFER
     
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-        
-    try:
-        data = json.loads(request.body)
-        rfid_uid = data.get('rfid_id', '').strip().upper()
-    except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON body'}, status=400)
-
-    if not rfid_uid:
-        return JsonResponse({'status': 'error', 'message': 'Missing RFID ID'}, status=400)
-
-    # ---------------------------------------------------------
-    # HARDCODED HARDWARE CONTROL CONFIGURATION
-    # ---------------------------------------------------------
-    ADD_USER_MASTER_UID = "E25B2F45"     # Master Card 1: Triggers addition mode
-    DELETE_USER_MASTER_UID = "893997C1"  # Master Card 2: Triggers deletion mode
-
-    # ---- CONDITION A: ADD-USER MASTER SCANNED ----
-    if rfid_uid == ADD_USER_MASTER_UID:
-        REGISTRATION_MODE_ACTIVE = True  
-        DELETE_MODE_ACTIVE = False       # Safety flush override
-        print("Master card of add")
-        return JsonResponse({
-            'status': 'system_action', 
-            'message': 'Add-User Master Card detected. Next unknown scan will be buffered.'
-        })
-
-    # ---- CONDITION B: DELETE-USER MASTER SCANNED ----
-    if rfid_uid == DELETE_USER_MASTER_UID:
-        DELETE_MODE_ACTIVE = True        
-        REGISTRATION_MODE_ACTIVE = False # Safety flush override
-        print("Master card of delete")
-        return JsonResponse({
-            'status': 'system_action', 
-            'message': 'Delete-User Master Card armed. Scan an existing card to remove it completely.'
-        })
-
-    # ---- ROUTE 1: ACTIVE DELETION PROCESSING ----
-    if DELETE_MODE_ACTIVE:
-        DELETE_MODE_ACTIVE = False       # Immediately disarm to prevent chain deletions
+    if request.method == 'POST':
         try:
-            teammate = Teammates.objects.get(rfid_number=rfid_uid)
-            target_name = teammate.name
-            teammate.delete()
-            return JsonResponse({'status': 'success', 'message': f'Profile for {target_name} wiped successfully.'})
-        except Teammates.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Scanned token not found in database. Deletion aborted.'}, status=404)
+            data = json.loads(request.body)
+            rfid_uid = data.get('rfid_id', '').strip().upper()
+        except json.JSONDecodeError:
+            print("--- [SERVER ALERT] Received invalid JSON payload layout ---")
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON body'}, status=400)
 
-    # ---- ROUTE 2: ACTIVE ATTENDANCE VALIDATION ----
-    try:
-        teammate = Teammates.objects.get(rfid_number=rfid_uid)
-        
-        # Reset staging flag if an already registered card is presented
-        REGISTRATION_MODE_ACTIVE = False 
-        
-        # Log the event inside your RFIDLog system table
-        RFIDLog.objects.create(uid=rfid_uid)
-        
-        return JsonResponse({'status': 'success', 'message': f'Attendance logged for {teammate.name}.'})
-        
-    except Teammates.DoesNotExist:
-        # ---- ROUTE 3: SECURE REGISTRATION PROCESSING ----
-        if REGISTRATION_MODE_ACTIVE:
-            REGISTRATION_MODE_ACTIVE = False # Clear staging state arm
-            
-            # Keep raw token cached strictly inside private server memory
-            REGISTRATION_BUFFER['temporary_hidden_uid'] = rfid_uid
-            
-            # Security Rule: Trigger redirect to client without transferring the raw UID token block
+        if not rfid_uid:
+            print("--- [SERVER ALERT] Request rejected: RFID ID string missing ---")
+            return JsonResponse({'status': 'error', 'message': 'Missing RFID ID'}, status=400)
+
+        # ---------------------------------------------------------
+        # HARDCODED HARDWARE CONTROL CONFIGURATION
+        # ---------------------------------------------------------
+        ADD_USER_MASTER_UID = "E25B2F45"     # Master Card 1: Triggers addition mode
+        DELETE_USER_MASTER_UID = "893997C1"  # Master Card 2: Triggers deletion mode
+
+        # ---- CONDITION A: ADD-USER MASTER SCANNED ----
+        if rfid_uid == ADD_USER_MASTER_UID:
+            print(f"--- [SYSTEM DETECTED] MASTER CARD FOR ADD DETECTED: {rfid_uid} ---")
             return JsonResponse({
-                'status': 'registration_trigger',
-                'message': 'Secure registration slot staged. Forwarding to entry interface.',
-                'redirect_url': '/dashboard/register/'
+                'status': 'system_action', 
+                'message': 'Master Card for ADD scanned successfully.'
             }, status=200)
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Unknown card scanned. Access Denied.'}, status=401)
+
+        # ---- CONDITION B: DELETE-USER MASTER SCANNED ----
+        if rfid_uid == DELETE_USER_MASTER_UID:
+            print(f"--- [SYSTEM DETECTED] MASTER CARD FOR DELETE DETECTED: {rfid_uid} ---")
+            return JsonResponse({
+                'status': 'system_action', 
+                'message': 'Master Card for DELETE scanned successfully.'
+            }, status=200)
+
+        # ---- LOGIC FOR STANDARD AND REGISTRATION SCANS ----
+        try:
+            # Check if this card belongs to an existing teammate profile
+            teammate = Teammates.objects.get(rfid_number=rfid_uid)
+            
+            # Log the normal check-in inside your RFIDLog data tracking system
+            RFIDLog.objects.create(uid=rfid_uid)
+            print(f"--- [ATTENDANCE SUCCESS] Card verified! Logged check-in for: {teammate.name} ---")
+            return JsonResponse({'status': 'success', 'message': f'Attendance logged for {teammate.name}.'}, status=200)
+            
+        except Teammates.DoesNotExist:
+            # This is an unknown card. Save it directly to memory for your dashboard web form setup
+            REGISTRATION_BUFFER['temporary_hidden_uid'] = rfid_uid
+            print(f"--- [REGISTRATION STAGED] Unknown Card detected: {rfid_uid}. Staging card into memory buffer ---")
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Unknown card {rfid_uid} successfully staged for registration.',
+                'rfid_id': rfid_uid
+            }, status=200)
+                
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 
 @csrf_exempt
