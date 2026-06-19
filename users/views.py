@@ -26,11 +26,12 @@ def home_dashboard(request):
 
 
 def register(request):
-    # 1. Pull the hidden token from server cache RAM
+    # 1. Pull the hidden token and master status from server cache RAM
     hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
+    master_scanned = REGISTRATION_BUFFER.get('master_scanned', False)
     
-    # 2. Security Wall: Kick them back out to home dashboard if no active hardware session is staged
-    if not hidden_uid:
+    # 2. Security Wall: Kick them back out to home dashboard if no active hardware session is staged/active
+    if not hidden_uid and not master_scanned:
         messages.error(request, "Access Denied: Please tap the Add-User Master Card first.")
         return redirect('homepg') 
 
@@ -41,7 +42,7 @@ def register(request):
             form.save() # Persists User and Teammates entry with zero frontend exposure
             
             # 4. Clear the memory slot completely
-            REGISTRATION_BUFFER.pop('temporary_hidden_uid', None)
+            REGISTRATION_BUFFER.clear()
             
             messages.success(request, "User registered successfully without token leaks!")
             return redirect('homepg')

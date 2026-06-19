@@ -75,6 +75,18 @@
         button:hover {
             background-color: #0056b3;
         }
+        .status-waiting {
+            background-color: #fff3cd;
+            color: #664d03;
+            border-left-color: #ffc107;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
         #message {
             margin-top: 15px;
             padding: 10px;
@@ -129,6 +141,7 @@
         </div>
 
         <button type="submit">Commit Profile to Database</button>
+        <button type="button" id="cancelBtn" class="btn-cancel">Cancel & Return to Dashboard</button>
     </form>
 
     <div id="message"></div>
@@ -143,16 +156,26 @@
             let response = await fetch('/api/rfid/check-buffer/'); 
             if (response.ok) {
                 let data = await response.json();
+                const statusBox = document.getElementById('scanStatus');
+                const rfidInput = document.getElementById('rfid_number');
+                
                 if (data.card_staged && data.rfid_id) {
-                    const rfidInput = document.getElementById('rfid_number');
-                    
-                    // Only update and flash UI if it's a freshly caught token
+                    // Only update if it's a new or different card
                     if (rfidInput.value !== data.rfid_id) {
                         rfidInput.value = data.rfid_id;
-                        const statusBox = document.getElementById('scanStatus');
                         statusBox.innerText = "Status: Card " + data.rfid_id + " Staged Successfully!";
+                        statusBox.classList.remove('status-waiting');
                         statusBox.classList.add('status-active');
                     }
+                } else if (data.master_scanned) {
+                    statusBox.innerText = "Status: Master Card Scanned. Please tap the new card...";
+                    statusBox.classList.remove('status-active');
+                    statusBox.classList.add('status-waiting');
+                    rfidInput.value = "";
+                } else {
+                    statusBox.innerText = "Status: Waiting for hardware card scan...";
+                    statusBox.classList.remove('status-active', 'status-waiting');
+                    rfidInput.value = "";
                 }
             }
         } catch (err) {
@@ -171,7 +194,7 @@
         
         // Structure payload values according to views.py JSON requirements
         const payload = {
-            name: document.getElementById('name').value.strip ? document.getElementById('name').value.trim() : document.getElementById('name').value,
+            name: document.getElementById('name').value.trim ? document.getElementById('name').value.trim() : document.getElementById('name').value,
             department: document.getElementById('department').value,
             year: document.getElementById('year').value,
             phone: document.getElementById('phone').value,
@@ -194,19 +217,40 @@
                 msgDiv.style.display = 'block';
                 msgDiv.style.backgroundColor = '#d4edda';
                 msgDiv.style.color = '#155724';
-                msgDiv.innerText = "Success: " + result.message;
+                msgDiv.innerText = "Success: " + result.message + " Redirecting to dashboard...";
                 
                 // Reset form inputs after a clean profile save
                 document.getElementById('registrationForm').reset();
                 const statusBox = document.getElementById('scanStatus');
                 statusBox.innerText = "Status: Waiting for hardware card scan...";
-                statusBox.classList.remove('status-active');
+                statusBox.classList.remove('status-active', 'status-waiting');
+                
+                // Redirect back to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
             } else {
                 showError(result.message || "Failed to commit record profile details.");
             }
         } catch (error) {
             showError("Network connection error handling transaction profile update.");
         }
+    });
+
+    // --- STEP 3: CANCEL BUTTON HANDLER ---
+    document.getElementById('cancelBtn').addEventListener('click', async function() {
+        try {
+            // POST to clear the server registration buffer
+            await fetch('/api/rfid/check-buffer/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        } catch (err) {
+            console.error("Error clearing buffer: ", err);
+        }
+        window.location.href = '/';
     });
 
     function showError(text) {

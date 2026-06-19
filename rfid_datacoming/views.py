@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib.auth.models import User
 from storage.models import Teammates, RFIDLog
+from users.models import AttendanceLog
 import json
 
 # Global application state to store the card pending registration
@@ -14,14 +15,23 @@ def check_buffer(request):
     """
     Buffer Status Endpoint: Called by the register.html JavaScript loop 
     every 2 seconds to check if a new card has been tapped on the hardware.
+    Also handles POST to clear the registration buffer.
     URL Path: /api/rfid/check-buffer/
     """
     global REGISTRATION_BUFFER
+    if request.method == 'POST':
+        REGISTRATION_BUFFER.clear()
+        return JsonResponse({'status': 'success', 'message': 'Staging buffer cleared.'})
+        
     hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
+    master_scanned = REGISTRATION_BUFFER.get('master_scanned', False)
+    master_scanned_at = REGISTRATION_BUFFER.get('master_scanned_at', None)
     
     return JsonResponse({
         'card_staged': bool(hidden_uid),
-        'rfid_id': hidden_uid
+        'rfid_id': hidden_uid,
+        'master_scanned': master_scanned,
+        'master_scanned_at': master_scanned_at
     })
 
 @csrf_exempt
@@ -53,6 +63,9 @@ def process_rfid(request):
         # ---- CONDITION A: ADD-USER MASTER SCANNED ----
         if rfid_uid == ADD_USER_MASTER_UID:
             print(f"--- [SYSTEM DETECTED] MASTER CARD FOR ADD DETECTED: {rfid_uid} ---")
+            REGISTRATION_BUFFER['master_scanned'] = True
+            REGISTRATION_BUFFER['master_scanned_at'] = timezone.now().timestamp()
+            REGISTRATION_BUFFER['temporary_hidden_uid'] = None
             return JsonResponse({
                 'status': 'system_action', 
                 'message': 'Master Card for ADD scanned successfully.'
@@ -61,9 +74,10 @@ def process_rfid(request):
         # ---- CONDITION B: DELETE-USER MASTER SCANNED ----
         if rfid_uid == DELETE_USER_MASTER_UID:
             print(f"--- [SYSTEM DETECTED] MASTER CARD FOR DELETE DETECTED: {rfid_uid} ---")
+            REGISTRATION_BUFFER.clear()
             return JsonResponse({
                 'status': 'system_action', 
-                'message': 'Master Card for DELETE scanned successfully.'
+                'message': 'Master Card for DELETE scanned successfully. Buffer cleared.'
             }, status=200)
 
         # ---- LOGIC FOR STANDARD AND REGISTRATION SCANS ----
@@ -73,19 +87,33 @@ def process_rfid(request):
             
             # Log the normal check-in inside your RFIDLog data tracking system
             RFIDLog.objects.create(uid=rfid_uid)
+            
+            # Mark their attendance in the AttendanceLog table
+            AttendanceLog.objects.create(teammates=teammate, status="Present")
+            
             print(f"--- [ATTENDANCE SUCCESS] Card verified! Logged check-in for: {teammate.name} ---")
             return JsonResponse({'status': 'success', 'message': f'Attendance logged for {teammate.name}.'}, status=200)
             
         except Teammates.DoesNotExist:
-            # This is an unknown card. Save it directly to memory for your dashboard web form setup
-            REGISTRATION_BUFFER['temporary_hidden_uid'] = rfid_uid
-            print(f"--- [REGISTRATION STAGED] Unknown Card detected: {rfid_uid}. Staging card into memory buffer ---")
-            
-            return JsonResponse({
-                'status': 'success',
-                'message': f'Unknown card {rfid_uid} successfully staged for registration.',
-                'rfid_id': rfid_uid
-            }, status=200)
+            # This is an unknown card.
+            # ONLY stage it if the master card has been scanned and we are waiting for a new user registration.
+            if REGISTRATION_BUFFER.get('master_scanned', False):
+                REGISTRATION_BUFFER['temporary_hidden_uid'] = rfid_uid
+                REGISTRATION_BUFFER['master_scanned'] = False
+                REGISTRATION_BUFFER['master_scanned_at'] = None
+                print(f"--- [REGISTRATION STAGED] Unknown Card detected: {rfid_uid}. Staging card into memory buffer ---")
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Unknown card {rfid_uid} successfully staged for registration.',
+                    'rfid_id': rfid_uid
+                }, status=200)
+            else:
+                print(f"--- [ACCESS DENIED] Unknown Card scanned but registration mode not active: {rfid_uid} ---")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Card not registered. Attendance not marked.'
+                }, status=200)
                 
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
@@ -117,7 +145,7 @@ def register_user_submit(request):
         hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
         
         if not hidden_uid:
-            return JsonResponse({'status': 'error', 'message': 'No pending RFID transaction session found.'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'No pending RFID transaction session found. Please scan the RFID card first.'}, status=400)
             
         if request.user.is_authenticated:
             current_author = request.user
@@ -141,8 +169,8 @@ def register_user_submit(request):
             author=current_author
         )
         
-        # Flush cache allocation immediately to eliminate extraction vulnerabilities
-        REGISTRATION_BUFFER.pop('temporary_hidden_uid', None)
+        # Flush cache allocation completely to eliminate extraction vulnerabilities
+        REGISTRATION_BUFFER.clear()
         
         return JsonResponse({'status': 'success', 'message': 'User registration initialized completely.'})
         

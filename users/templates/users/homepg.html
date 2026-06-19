@@ -107,5 +107,26 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    async function checkMasterScan() {
+        try {
+            let response = await fetch('/api/rfid/check-buffer/');
+            if (response.ok) {
+                let data = await response.json();
+                if (data.master_scanned && data.master_scanned_at) {
+                    let lastRedirectedAt = sessionStorage.getItem('last_redirected_at');
+                    if (data.master_scanned_at.toString() !== lastRedirectedAt) {
+                        sessionStorage.setItem('last_redirected_at', data.master_scanned_at.toString());
+                        window.location.href = '/register/';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Error polling buffer status: ", err);
+        }
+    }
+    // Poll every 2 seconds for master card status
+    setInterval(checkMasterScan, 2000);
+</script>
 </body>
 </html>
