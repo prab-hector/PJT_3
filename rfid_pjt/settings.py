@@ -133,14 +133,20 @@ import environ
 from pathlib import Path
 
 # Initialize environ reader variables
-env = environ.Env(
-    DEBUG=(bool, False)
-)
 
+import os
+from pathlib import Path
+
+# Ensure BASE_DIR is properly defined at the top of your file
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Read the .env configuration file explicitly
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# 1. The URL path used to access static assets in the browser
+STATIC_URL = '/static/'
 
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env('DEBUG')
+# 2. The absolute filesystem path where collectstatic will gather everything
+STATIC_ROOT = BASE_DIR / 'static'
+
+# 3. Directories where Django searches for app-independent source static assets
+STATICFILES_DIRS = [
+    # BASE_DIR / 'mystaticdir', # Uncomment only if you use an explicit global assets folder
+]
