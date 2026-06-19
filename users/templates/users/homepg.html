@@ -1,132 +1,180 @@
-{% load crispy_forms_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <title>Attendance Dashboard - NLLRFID</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .navbar-custom { background-color: #ffffff; border-bottom: 1px solid #e9ecef; }
-        .status-dot { height: 10px; width: 10px; background-color: #28a745; display: inline-block; border-radius: 50%; }
-        .admin-avatar { width: 40px; height: 40px; background-color: #0d6efd; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #e9ecef; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .badge-present { background-color: #d1e7dd; color: #0f5132; border-radius: 20px; padding: 5px 15px; }
-        .badge-absent { background-color: #f8d7da; color: #842029; border-radius: 20px; padding: 5px 15px; }
-        .badge-late { background-color: #fff3cd; color: #664d03; border-radius: 20px; padding: 5px 15px; }
+        /* Ambient star field styling matching login/profile */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 3.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.15; transform: scale(0.8); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
     </style>
 </head>
-<body>
+<body class="bg-black text-zinc-100 min-h-screen relative overflow-x-hidden font-sans selection:bg-blue-600/30">
 
-<nav class="navbar navbar-expand-lg navbar-light navbar-custom py-2 px-4">
-    <button class="btn btn-link text-dark mr-3"><i class="fas fa-bars fa-lg"></i></button>
-    <div class="input-group mx-2" style="max-width: 400px;">
-        <div class="input-group-prepend">
-            <span class="input-group-text bg-light border-right-0"><i class="fas fa-search text-muted"></i></span>
-        </div>
-        <input type="text" class="form-control bg-light border-left-0" placeholder="Search students, classes...">
+    <div class="absolute inset-0 pointer-events-none z-0">
+        <div class="star w-1 h-1 top-16 left-1/12" style="animation-delay: 0.1s;"></div>
+        <div class="star w-1.5 h-1.5 top-1/4 left-1/3" style="animation-delay: 1.4s;"></div>
+        <div class="star w-1 h-1 top-12 right-1/4" style="animation-delay: 0.6s;"></div>
+        <div class="star w-2 h-2 bottom-1/3 left-10" style="animation-delay: 1.9s;"></div>
+        <div class="star w-1.5 h-1.5 bottom-24 right-1/12" style="animation-delay: 0.4s;"></div>
     </div>
 
-    <div class="collapse navbar-collapse justify-content-end">
-        <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 mr-4">
-            <span class="status-dot mr-2"></span>
-            <small class="font-weight-bold text-secondary">System online</small>
-        </div>
-        <a href="#" class="text-secondary position-relative mr-4">
-            <i class="far fa-bell fa-lg"></i>
-            <span class="badge badge-danger position-absolute" style="top: -5px; right: -5px; font-size: 0.6rem;">1</span>
-        </a>
-        <div class="d-flex align-items-center dropdown">
-            <div class="admin-avatar mr-2">{{ admin_initials }}</div>
-            <div class="text-left mr-2" style="line-height: 1.2;">
-                <div class="font-weight-bold text-dark" style="font-size: 0.9rem;">{{ admin_name }}</div>
-                <small class="text-muted" style="font-size: 0.75rem;">Administrator</small>
+    <nav class="bg-zinc-950/80 border-b border-zinc-800/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <div class="flex items-center space-x-4">
+                <button class="text-zinc-400 hover:text-white transition-colors lg:hidden">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-950/50">
+                        <i class="fas fa-satellite fa-sm"></i>
+                    </div>
+                    <span class="text-lg font-bold tracking-tight text-white hidden sm:inline">Telemetry Dashboard</span>
+                </div>
             </div>
-            <i class="fas fa-chevron-down text-muted fa-xs"></i>
-        </div>
-    </div>
-</nav>
 
-<div class="container-fluid p-4">
-    <div class="dashboard-card p-4">
-        <div class="form-row mb-4">
-            <div class="col-md-3">
-                <input type="text" class="form-control rounded-pill" placeholder="🔍 Search by name...">
+            <div class="hidden md:flex items-center flex-1 max-w-md mx-8 relative">
+                <span class="absolute left-4 text-zinc-600"><i class="fas fa-search"></i></span>
+                <input type="text" placeholder="Search parameters, nodes, accounts..." 
+                       class="w-full pl-11 pr-4 py-2 bg-zinc-900 border border-zinc-800/80 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/80 transition-all">
             </div>
-            <div class="col-md-2">
-                <input type="date" class="form-control rounded-pill" value="2026-06-18">
+
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-2 bg-zinc-900/60 border border-zinc-800/60 px-3.5 py-1.5 rounded-full">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider font-mono">Gateway Online</span>
+                </div>
+
+                <a href="#" class="text-zinc-400 hover:text-white relative transition-colors">
+                    <i class="far fa-bell text-lg"></i>
+                    <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-600 text-[10px] font-bold font-mono text-white flex items-center justify-center rounded-full">1</span>
+                </a>
+
+                <a href="{% url 'profile' %}" class="flex items-center space-x-3 group text-left">
+                    <div class="w-9 h-9 bg-blue-600 text-white font-bold text-sm rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-colors shadow-lg shadow-blue-950/50">
+                        {{ admin_initials|default:"A" }}
+                    </div>
+                    <div class="hidden lg:block leading-tight">
+                        <div class="text-xs font-bold text-white tracking-wide">{{ admin_name|default:"Administrator" }}</div>
+                        <span class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">Root User</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-zinc-600 group-hover:text-zinc-400 text-[10px] transition-colors hidden lg:block"></i>
+                </a>
             </div>
-            <div class="col-md-2">
-                <select class="form-control custom-select rounded-pill">
-                    <option>All Classes</option>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="relative">
+                <span class="absolute left-4 top-3.5 text-zinc-600 text-sm"><i class="fas fa-search"></i></span>
+                <input type="text" placeholder="Filter node search parameters..." 
+                       class="w-full pl-11 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+            </div>
+            <div>
+                <input type="date" value="2026-06-18" 
+                       class="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-zinc-300 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+            </div>
+            <div>
+                <select class="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all appearance-none cursor-pointer">
+                    <option>All Telemetry Classes</option>
                 </select>
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle text-secondary" style="font-size: 0.95rem;">
-                <thead class="bg-light text-dark font-weight-bold">
-                    <tr>
-                        <th class="border-0">Student <i class="fas fa-arrow-up fa-xs"></i></th>
-                        <th class="border-0">Department / Branch</th>
-                        <th class="border-0">Scan Time</th>
-                        <th class="border-0 text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in recent_scans %}
-                    <tr>
-                        <td class="font-weight-bold text-dark text-uppercase">{{ log.teammates.name }}</td>
-                        <td>{{ log.teammates.branch }}</td>
-                        <td>{{ log.timestamp|date:"h:i A" }}</td>
-                        <td class="text-center">
-                            {% if log.status == 'Present' %}
-                                <span class="badge-present font-weight-bold"><span class="status-dot mr-1"></span> Present</span>
-                            {% elif log.status == 'Late' %}
-                                <span class="badge-late font-weight-bold">● Late</span>
-                            {% else %}
-                                <span class="badge-absent font-weight-bold">● Absent</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
-                            <i class="fas fa-id-card fa-2x mb-3 d-block"></i>
-                            Waiting for scan transmissions from ESP32 gateway hardware...
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-zinc-950/80 border-b border-zinc-800 text-xs font-bold font-mono tracking-wider text-zinc-400 uppercase">
+                            <th class="py-4 px-6">Student Node <i class="fas fa-arrow-up text-[10px] ml-1 text-blue-500"></i></th>
+                            <th class="py-4 px-6">Department / Branch</th>
+                            <th class="py-4 px-6">Scan Timestamp</th>
+                            <th class="py-4 px-6 text-center">Data Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-800/40 text-sm">
+                        {% for log in recent_scans %}
+                        <tr class="hover:bg-zinc-900/30 transition-colors group">
+                            <td class="py-4 px-6 font-semibold text-white tracking-wide text-uppercase group-hover:text-blue-400 transition-colors">
+                                {{ log.teammates.name }}
+                            </td>
+                            <td class="py-4 px-6 text-zinc-400">
+                                {{ log.teammates.branch }}
+                            </td>
+                            <td class="py-4 px-6 font-mono text-xs text-zinc-500">
+                                {{ log.timestamp|date:"h:i A" }}
+                            </td>
+                            <td class="py-4 px-6 text-center">
+                                {% if log.status == 'Present' %}
+                                <span class="inline-flex items-center px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span> Present
+                                </span>
+                                {% elif log.status == 'Late' %}
+                                <span class="inline-flex items-center px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span> Late
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span> Absent
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-16 px-6 text-center">
+                                <div class="max-w-md mx-auto flex flex-col items-center">
+                                    <div class="w-14 h-14 bg-zinc-950 rounded-2xl border border-zinc-800 flex items-center justify-center text-zinc-600 mb-4 shadow-inner">
+                                        <i class="fas fa-satellite-dish text-xl animate-pulse text-blue-500"></i>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-zinc-300 tracking-wide mb-1">Awaiting Orbital Stream Transmissions</h4>
+                                    <p class="text-xs text-zinc-500 leading-relaxed">System buffer listening for real-time validation data packages from local ESP32 gateway microcontrollers...</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</div>
+    </main>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    async function checkMasterScan() {
-        try {
-            let response = await fetch('/api/rfid/check-buffer/');
-            if (response.ok) {
-                let data = await response.json();
-                if (data.master_scanned && data.master_scanned_at) {
-                    let lastRedirectedAt = sessionStorage.getItem('last_redirected_at');
-                    if (data.master_scanned_at.toString() !== lastRedirectedAt) {
-                        sessionStorage.setItem('last_redirected_at', data.master_scanned_at.toString());
-                        window.location.href = '/register/';
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script>
+        async function checkMasterScan() {
+            try {
+                let response = await fetch('/api/rfid/check-buffer/');
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.master_scanned && data.master_scanned_at) {
+                        let lastRedirectedAt = sessionStorage.getItem('last_redirected_at');
+                        if (data.master_scanned_at.toString() !== lastRedirectedAt) {
+                            sessionStorage.setItem('last_redirected_at', data.master_scanned_at.toString());
+                            window.location.href = '/register/';
+                        }
                     }
                 }
+            } catch (err) {
+                console.error("Error polling buffer status: ", err);
             }
-        } catch (err) {
-            console.error("Error polling buffer status: ", err);
         }
-    }
-    // Poll every 2 seconds for master card status
-    setInterval(checkMasterScan, 2000);
-</script>
+        // Poll database buffer pipeline every 2000ms
+        setInterval(checkMasterScan, 2000);
+    </script>
 </body>
 </html>
