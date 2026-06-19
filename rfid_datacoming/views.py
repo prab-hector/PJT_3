@@ -20,7 +20,7 @@ def process_rfid(request):
     """
     global REGISTRATION_MODE_ACTIVE, DELETE_MODE_ACTIVE, REGISTRATION_BUFFER
     
-    if request.method == 'POST':
+    if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
         
     try:
