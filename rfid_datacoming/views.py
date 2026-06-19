@@ -20,7 +20,7 @@ def process_rfid(request):
     """
     global REGISTRATION_MODE_ACTIVE, DELETE_MODE_ACTIVE, REGISTRATION_BUFFER
     
-    if request.method != 'POST':
+    if request.method == 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
         
     try:
@@ -42,6 +42,7 @@ def process_rfid(request):
     if rfid_uid == ADD_USER_MASTER_UID:
         REGISTRATION_MODE_ACTIVE = True  
         DELETE_MODE_ACTIVE = False       # Safety flush override
+        print("Master card of add")
         return JsonResponse({
             'status': 'system_action', 
             'message': 'Add-User Master Card detected. Next unknown scan will be buffered.'
@@ -51,6 +52,7 @@ def process_rfid(request):
     if rfid_uid == DELETE_USER_MASTER_UID:
         DELETE_MODE_ACTIVE = True        
         REGISTRATION_MODE_ACTIVE = False # Safety flush override
+        print("Master card of delete")
         return JsonResponse({
             'status': 'system_action', 
             'message': 'Delete-User Master Card armed. Scan an existing card to remove it completely.'
