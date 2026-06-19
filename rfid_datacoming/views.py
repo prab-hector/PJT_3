@@ -6,22 +6,23 @@ from django.contrib.auth.models import User
 from storage.models import Teammates, RFIDLog
 import json
 
-# Global application states to track separate card processes
-# Note: For multi-worker production setups, migrate these to Django Cache (Redis/Memcached)
-REGISTRATION_BUFFER = {}
-REGISTRATION_MODE_ACTIVE = False
-DELETE_MODE_ACTIVE = False
-
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from django.contrib.auth.models import User
-from storage.models import Teammates, RFIDLog
-import json
-
 # Global application state to store the card pending registration
 REGISTRATION_BUFFER = {}
+
+@csrf_exempt
+def check_buffer(request):
+    """
+    Buffer Status Endpoint: Called by the register.html JavaScript loop 
+    every 2 seconds to check if a new card has been tapped on the hardware.
+    URL Path: /api/rfid/check-buffer/
+    """
+    global REGISTRATION_BUFFER
+    hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
+    
+    return JsonResponse({
+        'card_staged': bool(hidden_uid),
+        'rfid_id': hidden_uid
+    })
 
 @csrf_exempt
 def process_rfid(request):
@@ -118,14 +119,11 @@ def register_user_submit(request):
         if not hidden_uid:
             return JsonResponse({'status': 'error', 'message': 'No pending RFID transaction session found.'}, status=400)
             
-        # Determine relational user profile object instance requirement for 'author' field
         if request.user.is_authenticated:
             current_author = request.user
         else:
-            # Fallback handling strategy: link to primary administrative account if scanned from unauthenticated client panel
             current_author = User.objects.filter(is_superuser=True).first()
             if not current_author:
-                # Absolute safety fallback case if no superuser exists yet
                 current_author = User.objects.first()
                 
         if not current_author:
@@ -143,7 +141,7 @@ def register_user_submit(request):
             author=current_author
         )
         
-        # CRITICAL RECOVERY STATE: Flush cache allocation immediately to eliminate extraction vulnerabilities
+        # Flush cache allocation immediately to eliminate extraction vulnerabilities
         REGISTRATION_BUFFER.pop('temporary_hidden_uid', None)
         
         return JsonResponse({'status': 'success', 'message': 'User registration initialized completely.'})

@@ -3,131 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Student Registration</title>
+    <title>Teammate Registration System</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f6f9;
+            margin: 0;
+            padding: 40px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
-
-        .registration-container {
+        .form-container {
             background: #ffffff;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 450px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .header h2 {
-            color: #1e293b;
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .status-alert {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 12px;
             border-radius: 8px;
-            font-size: 13px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .status-box {
+            background-color: #e9ecef;
+            padding: 12px;
+            border-radius: 4px;
             margin-bottom: 20px;
-            font-weight: 500;
+            font-weight: bold;
+            color: #495057;
+            border-left: 4px solid #6c757d;
         }
-
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
-
         label {
             display: block;
-            margin-bottom: 6px;
-            color: #334155;
-            font-size: 14px;
+            margin-bottom: 5px;
             font-weight: 600;
+            color: #444;
         }
-
-        input[type="text"], select {
+        input, select {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1e293b;
-            transition: border-color 0.2s;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
-
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: #3b82f6;
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
         }
-
         button {
             width: 100%;
-            background-color: #2563eb;
+            padding: 12px;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 12px;
+            border-radius: 4px;
             font-size: 16px;
-            font-weight: 600;
-            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
+            font-weight: bold;
         }
-
         button:hover {
-            background-color: #1d4ed8;
+            background-color: #0056b3;
         }
-
-        .footer-link {
-            text-align: center;
+        #message {
             margin-top: 15px;
-        }
-
-        .footer-link a {
-            color: #64748b;
-            font-size: 13px;
-            text-decoration: none;
-        }
-
-        .footer-link a:hover {
-            text-decoration: underline;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-<div class="registration-container">
-    <div class="header">
-        <h2>Student Registration</h2>
-        <p>Assign credentials to the secured gateway token</p>
+<div class="form-container">
+    <h2>Add New Teammate Profile</h2>
+    
+    <div id="scanStatus" class="status-box">
+        Status: Waiting for hardware card scan...
     </div>
 
-    <div class="status-alert">
-        🔒 An RFID token identifier is securely staged on the server.
-    </div>
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="rfid_number">Staged RFID Token UID</label>
+            <input type="text" id="rfid_number" placeholder="Scan your card on the device..." readonly required>
+        </div>
 
-    <form id="studentRegister
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Enter teammate name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="department">Department / Branch</label>
+            <input type="text" id="department" placeholder="e.g., Computer Engineering" required>
+        </div>
+
+        <div class="form-group">
+            <label for="year">Academic Year</label>
+            <select id="year">
+                <option value="First Year">First Year</option>
+                <option value="Second Year">Second Year</option>
+                <option value="Third Year">Third Year</option>
+                <option value="Fourth Year">Fourth Year</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="text" id="phone" placeholder="Enter 10-digit number" value="0000000000">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="name@example.com">
+        </div>
+
+        <button type="submit">Commit Profile to Database</button>
+    </form>
+
+    <div id="message"></div>
+</div>
+
+<script>
+    // --- STEP 1: BACKGROUND HARDWARE POLLING LOOP ---
+    // Automatically checks every 2 seconds if an unknown card has been scanned into server memory
+    async function checkStagedCard() {
+        try {
+            // Point this directly to your helper buffer evaluation view
+            let response = await fetch('/api/rfid/check-buffer/'); 
+            if (response.ok) {
+                let data = await response.json();
+                if (data.card_staged && data.rfid_id) {
+                    const rfidInput = document.getElementById('rfid_number');
+                    
+                    // Only update and flash UI if it's a freshly caught token
+                    if (rfidInput.value !== data.rfid_id) {
+                        rfidInput.value = data.rfid_id;
+                        const statusBox = document.getElementById('scanStatus');
+                        statusBox.innerText = "Status: Card " + data.rfid_id + " Staged Successfully!";
+                        statusBox.classList.add('status-active');
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Polling connection link resting: ", err);
+        }
+    }
+
+    // Run the background hardware scanner diagnostic every 2000ms
+    setInterval(checkStagedCard, 2000);
+
+    // --- STEP 2: ASYNCHRONOUS FORM SUBMISSION LOGIC ---
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const msgDiv = document.getElementById('message');
+        
+        // Structure payload values according to views.py JSON requirements
+        const payload = {
+            name: document.getElementById('name').value.strip ? document.getElementById('name').value.trim() : document.getElementById('name').value,
+            department: document.getElementById('department').value,
+            year: document.getElementById('year').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value
+        };
+
+        try {
+            let response = await fetch('/api/rfid/register-submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // CSRF token configuration bypassed securely via backend @csrf_exempt rule decoration
+                },
+                body: JSON.stringify(payload)
+            });
+
+            let result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                msgDiv.style.display = 'block';
+                msgDiv.style.backgroundColor = '#d4edda';
+                msgDiv.style.color = '#155724';
+                msgDiv.innerText = "Success: " + result.message;
+                
+                // Reset form inputs after a clean profile save
+                document.getElementById('registrationForm').reset();
+                const statusBox = document.getElementById('scanStatus');
+                statusBox.innerText = "Status: Waiting for hardware card scan...";
+                statusBox.classList.remove('status-active');
+            } else {
+                showError(result.message || "Failed to commit record profile details.");
+            }
+        } catch (error) {
+            showError("Network connection error handling transaction profile update.");
+        }
+    });
+
+    function showError(text) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.style.display = 'block';
+        msgDiv.style.backgroundColor = '#f8d7da';
+        msgDiv.style.color = '#721c24';
+        msgDiv.innerText = "Error: " + text;
+    }
+</script>
+
+</body>
+</html>
