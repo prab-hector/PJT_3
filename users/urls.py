@@ -9,5 +9,4 @@ urlpatterns = [
     
     # Secure blind student data entry onboarding portal
     # URL: https://nli.pythonanywhere.com/register/
-    path('register/', views.register, name='register'),
 ]
