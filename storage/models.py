@@ -18,8 +18,11 @@ class Teammates(models.Model):
     
 
 class RFIDLog(models.Model):
-    uid = models.CharField(max_length=50)
+    rfid_number = models.CharField(max_length=8)
+    date_posted = models.DateTimeField(default=timezone.now)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"UID: {self.uid} at {self.timestamp}"
+    
+

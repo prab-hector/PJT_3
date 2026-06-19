@@ -1,0 +1,92 @@
+import os
+import calendar
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from storage.models import RFIDLog
+
+class Command(BaseCommand):
+    help = "Exports previous month's logs on the 1st day of a new month and clears local row space."
+
+    def handle(self, *args, **options):
+        # 1. Fetch current runtime context
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        
+        # LOGIC FIX: Target execution strictly on the 1st morning of the new month
+        if today.day != 1:
+            self.stdout.write(self.style.WARNING(
+                f"Skipping execution. Today ({today}) is day {today.day}. Automation runs only on Day 1."
+            ))
+            return
+
+        # Calculate exact start and end bounds of the complete previous month
+        # Example: If today is July 1, target_date becomes June 30
+        target_date = today - timezone.timedelta(days=1)
+        start_date = target_date.replace(day=1)
+        end_date = target_date
+
+        # 2. Gather records for the entire previous month (Optimized to prevent N+1 queries)
+        logs_to_export = RFIDLog.objects.filter(
+            timestamp__date__range=[start_date, end_date]
+        ).select_related('teammates') # Crucial performance patch
+
+        if not logs_to_export.exists():
+            self.stdout.write(self.style.WARNING(f"No records found for the period: {start_date} to {end_date}."))
+            return
+
+        # 3. Establish Google Cloud Connection API Channel
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        creds_path = os.path.join(base_dir, 'google_creds.json')
+        
+        scopes = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scopes)
+        client = gspread.authorize(creds)
+
+        # 4. Access Master Workbook File 
+        spreadsheet_name = "RFID Attendance Master Sheet"
+        try:
+            sheet = client.open(spreadsheet_name)
+        except gspread.SpreadsheetNotFound:
+            self.stdout.write(self.style.ERROR(f"Spreadsheet '{spreadsheet_name}' not found."))
+            return
+
+        # 5. DYNAMIC MONTH TAB GENERATION: NLI attendance list of month {Month Name}
+        previous_month_name = target_date.strftime('%B')  # Accurately grabs the month name that just ended
+        worksheet_title = f"NLI attendance list of month {previous_month_name}"
+        
+        try:
+            worksheet = sheet.worksheet(worksheet_title)
+            worksheet.clear()
+            worksheet.append_row(["Student Name", "Branch", "RFID UID", "Scan Timestamp"])
+        except gspread.WorksheetNotFound:
+            worksheet = sheet.add_worksheet(title=worksheet_title, rows="1500", cols="4")
+            worksheet.append_row(["Student Name", "Branch", "RFID UID", "Scan Timestamp"])
+
+        # 6. Matrix compilation
+        rows_to_append = []
+        for log in logs_to_export:
+            has_profile = hasattr(log, 'teammates') and log.teammates is not None
+            rows_to_append.append([
+                log.teammates.name if has_profile else "Unknown Token",
+                log.teammates.branch if has_profile else "N/A",
+                log.uid,
+                timezone.localtime(log.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            ])
+
+        # Push payload array to cloud endpoint 
+        worksheet.append_rows(rows_to_append)
+        self.stdout.write(self.style.SUCCESS(f"Successfully archived log spreadsheet tab: {worksheet_title}"))
+
+        # 7. Local clean data space recovery optimization 
+        count, _ = logs_to_export.delete()
+        self.stdout.write(self.style.SUCCESS(f"Storage Optimization: Safely dropped {count} log rows from your live database file."))
+
+
+
+
+
+
+
+

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'users',
     'rfid_datacoming',
     'rest_framework',
+    'data_excel'
 ]
 
 MIDDLEWARE = [
@@ -125,3 +126,21 @@ STATIC_URL = 'static/'
 STATIC_URL = 'static/'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+
+import os
+import environ
+from pathlib import Path
+
+# Initialize environ reader variables
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Read the .env configuration file explicitly
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
