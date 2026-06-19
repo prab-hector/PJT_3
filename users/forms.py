@@ -18,21 +18,30 @@ class UserRegisterForm(UserCreationForm):
     )
     
     branch = forms.CharField(required=True, max_length=30)
-    year = forms.CharField(required=False, max_length=30)
+    year = forms.CharField(required=True, max_length=30, initial="First Year")
     division = forms.CharField(required=True, max_length=20)
     domain = forms.CharField(required=True, max_length=30)
-    rfid_number = forms.CharField(required=True, max_length=8)
 
     class Meta:
         model = User
         fields = ['username', 'email']
 
+    # Custom initializer to securely inject the RFID token from the view layer
+    def __init__(self, *args, **kwargs):
+        self.rfid_number = kwargs.pop('rfid_number', None)
+        super().__init__(*args, **kwargs)
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        
         if commit:
             user.save()
-            # Automatically link and create the profile data into the Teammates table
+            
+            if not self.rfid_number:
+                raise forms.ValidationError("No active hardware RFID staging session found.")
+            
+            # Commit metadata to database along with the hidden token string
             Teammates.objects.create(
                 author=user,
                 name=user.username,
@@ -40,6 +49,7 @@ class UserRegisterForm(UserCreationForm):
                 branch=self.cleaned_data['branch'],
                 phone_number=self.cleaned_data['phone_number'],
                 year=self.cleaned_data['year'],
-                rfid_number=self.cleaned_data['rfid_number']
+                rfid_number=self.rfid_number  # Injected securely behind the scenes
             )
+            
         return user

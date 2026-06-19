@@ -1,9 +1,12 @@
 from django.urls import path
 from . import views
-from rfid_datacoming.views import process_rfid
 
 urlpatterns = [
-    path('',views.home_dashboard, name = 'homepg'),
-    path('register/',views.register,name = 'register'),
-    path('api/rfid/process/', process_rfid, name='api-rfid-process'),
+    # Main landing page dashboard view tracking real-time logs
+    # URL: https://nli.pythonanywhere.com/
+    path('', views.home_dashboard, name='homepg'),
+    
+    # Secure blind student data entry onboarding portal
+    # URL: https://nli.pythonanywhere.com/register/
+    path('register/', views.register, name='register'),
 ]

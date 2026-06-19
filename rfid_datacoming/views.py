@@ -1,20 +1,24 @@
 from django.shortcuts import render
-
-# Create your views here.
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from storage.models import Teammates
+from django.contrib.auth.models import User
+from .models import Teammates, RFIDLog
 import json
 
-# Global application states to track special card processes
-# Note: For production systems, use Django Cache (Redis/Memcached) instead of global variables
+# Global application states to track separate card processes
+# Note: For multi-worker production setups, migrate these to Django Cache (Redis/Memcached)
 REGISTRATION_BUFFER = {}
+REGISTRATION_MODE_ACTIVE = False
 DELETE_MODE_ACTIVE = False
 
 @csrf_exempt
 def process_rfid(request):
-    global DELETE_MODE_ACTIVE, REGISTRATION_BUFFER
+    """
+    Core Gateway Endpoint: Receives all raw HTTP POST scan packets from the ESP32 hardware client.
+    URL Path: /api/rfid/process/
+    """
+    global REGISTRATION_MODE_ACTIVE, DELETE_MODE_ACTIVE, REGISTRATION_BUFFER
     
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
@@ -24,61 +28,132 @@ def process_rfid(request):
         rfid_uid = data.get('rfid_id', '').strip().upper()
     except json.JSONDecodeError:
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON body'}, status=400)
-        
+
     if not rfid_uid:
         return JsonResponse({'status': 'error', 'message': 'Missing RFID ID'}, status=400)
 
-    # Hardcoded System Configuration Tags
-    MASTER_CARD_UID = "E25B2F45"  # Replace with actual Master Card UID
-    DELETION_CARD_UID = "893997C1"  # Replace with actual Deletion Card UID
+    # ---------------------------------------------------------
+    # HARDCODED HARDWARE CONTROL CONFIGURATION
+    # ---------------------------------------------------------
+    ADD_USER_MASTER_UID = "E25B2F45"     # Master Card 1: Triggers addition mode
+    DELETE_USER_MASTER_UID = "893997C1"  # Master Card 2: Triggers deletion mode
 
-    # ---- MODE 1: DELETION HANDLING ----
-    if rfid_uid == DELETION_CARD_UID:
-        DELETE_MODE_ACTIVE = True
+    # ---- CONDITION A: ADD-USER MASTER SCANNED ----
+    if rfid_uid == ADD_USER_MASTER_UID:
+        REGISTRATION_MODE_ACTIVE = True  
+        DELETE_MODE_ACTIVE = False       # Safety flush override
         return JsonResponse({
             'status': 'system_action', 
-            'message': 'Deletion mode armed. Scan target card to delete completely.'
+            'message': 'Add-User Master Card detected. Next unknown scan will be buffered.'
         })
 
+    # ---- CONDITION B: DELETE-USER MASTER SCANNED ----
+    if rfid_uid == DELETE_USER_MASTER_UID:
+        DELETE_MODE_ACTIVE = True        
+        REGISTRATION_MODE_ACTIVE = False # Safety flush override
+        return JsonResponse({
+            'status': 'system_action', 
+            'message': 'Delete-User Master Card armed. Scan an existing card to remove it completely.'
+        })
+
+    # ---- ROUTE 1: ACTIVE DELETION PROCESSING ----
     if DELETE_MODE_ACTIVE:
-        # Clear the flag immediately to only delete the single next card
-        DELETE_MODE_ACTIVE = False
-        
+        DELETE_MODE_ACTIVE = False       # Immediately disarm to prevent chain deletions
         try:
-            # Query the database from your Teammates app/class
             teammate = Teammates.objects.get(rfid_number=rfid_uid)
+            target_name = teammate.name
             teammate.delete()
-            return JsonResponse({'status': 'success', 'message': f'Record for UID {rfid_uid} deleted successfully.'})
+            return JsonResponse({'status': 'success', 'message': f'Profile for {target_name} wiped successfully.'})
         except Teammates.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Target UID not found in database. Deletion canceled.'})
+            return JsonResponse({'status': 'error', 'message': 'Scanned token not found in database. Deletion aborted.'}, status=404)
 
-    # ---- MODE 2: MASTER CARD HANDLING & REGISTRATION FLOW ----
-    if rfid_uid == MASTER_CARD_UID:
-        return JsonResponse({
-            'status': 'system_action', 
-            'message': 'Master Card tapped. Dashboard alerted. Present unregistered card.'
-        })
-
-    # Check if the scanned card exists inside the Teammates database class
+    # ---- ROUTE 2: ACTIVE ATTENDANCE VALIDATION ----
     try:
         teammate = Teammates.objects.get(rfid_number=rfid_uid)
         
-        # ---- MODE 3: STANDARD ATTENDANCE RECORDING ----
-        # Assuming you have an Attendance tracking class/model linked to Teammates
-        # Attendance.objects.create(teammate=teammate, timestamp=timezone.now())
+        # Reset staging flag if an already registered card is presented
+        REGISTRATION_MODE_ACTIVE = False 
         
-        return JsonResponse({
-            'status': 'success', 
-            'message': f'Attendance successfully logged for {teammate.name}.'
-        })
+        # Log the event inside your RFIDLog system table
+        RFIDLog.objects.create(uid=rfid_uid)
+        
+        return JsonResponse({'status': 'success', 'message': f'Attendance logged for {teammate.name}.'})
         
     except Teammates.DoesNotExist:
-        # Save the unknown UID globally so your dashboard registration page can fetch it auto-filled
-        REGISTRATION_BUFFER['last_unregistered_uid'] = rfid_uid
+        # ---- ROUTE 3: SECURE REGISTRATION PROCESSING ----
+        if REGISTRATION_MODE_ACTIVE:
+            REGISTRATION_MODE_ACTIVE = False # Clear staging state arm
+            
+            # Keep raw token cached strictly inside private server memory
+            REGISTRATION_BUFFER['temporary_hidden_uid'] = rfid_uid
+            
+            # Security Rule: Trigger redirect to client without transferring the raw UID token block
+            return JsonResponse({
+                'status': 'registration_trigger',
+                'message': 'Secure registration slot staged. Forwarding to entry interface.',
+                'redirect_url': '/dashboard/register/'
+            }, status=200)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Unknown card scanned. Access Denied.'}, status=401)
+
+
+@csrf_exempt
+def register_user_submit(request):
+    """
+    Profile Provisioning View: Handles profile submission from web form layout.
+    URL Path: /api/rfid/register-submit/
+    """
+    global REGISTRATION_BUFFER
+    
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
         
-        return JsonResponse({
-            'status': 'registration_trigger',
-            'message': 'User does not exist. Forwarding profile to dashboard registration wizard.',
-            'redirect_url': '/dashboard/register/',
-            'captured_uid': rfid_uid
-        }, status=200)
+    try:
+        data = json.loads(request.body)
+        username = data.get('name', '').strip()
+        branch_name = data.get('department', '').strip()
+        phone = data.get('phone', '0000000000').strip()
+        academic_year = data.get('year', 'First Year').strip()
+        user_email = data.get('email', '').strip() or None
+
+        if not username or not branch_name:
+            return JsonResponse({'status': 'error', 'message': 'Name and Department values are required.'}, status=400)
+        
+        # Extract secret token directly out of internal memory
+        hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
+        
+        if not hidden_uid:
+            return JsonResponse({'status': 'error', 'message': 'No pending RFID transaction session found.'}, status=400)
+            
+        # Determine relational user profile object instance requirement for 'author' field
+        if request.user.is_authenticated:
+            current_author = request.user
+        else:
+            # Fallback handling strategy: link to primary administrative account if scanned from unauthenticated client panel
+            current_author = User.objects.filter(is_superuser=True).first()
+            if not current_author:
+                # Absolute safety fallback case if no superuser exists yet
+                current_author = User.objects.first()
+                
+        if not current_author:
+            return JsonResponse({'status': 'error', 'message': 'Database configuration issue: No system author accounts found.'}, status=500)
+
+        # Commit directly to match the precise database field requirements
+        Teammates.objects.create(
+            name=username,
+            branch=branch_name,
+            email=user_email,
+            phone_number=phone,
+            year=academic_year,
+            rfid_number=hidden_uid,
+            date_posted=timezone.now(),
+            author=current_author
+        )
+        
+        # CRITICAL RECOVERY STATE: Flush cache allocation immediately to eliminate extraction vulnerabilities
+        REGISTRATION_BUFFER.pop('temporary_hidden_uid', None)
+        
+        return JsonResponse({'status': 'success', 'message': 'User registration initialized completely.'})
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Server Error: {str(e)}'}, status=500)
