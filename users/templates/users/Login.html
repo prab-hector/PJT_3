@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <div class="login-container">
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %} <div class="form-group">
+                <label for="username">Email or username</label>
+                <input type="text" id="username" name="username" value="admin@college.edu" placeholder="Enter your email or username">
+            </div>
+
+            <div class="form-group">
+                <div class="label-row">
+                    <label for="password">Password</label>
+                    <a href="#" class="forgot-link">Forgot?</a>
+                </div>
+                <input type="password" id="password" name="password" value="password123" placeholder="Enter your password">
+            </div>
+
+            </form>
+    </div>
+</body>
+</html>

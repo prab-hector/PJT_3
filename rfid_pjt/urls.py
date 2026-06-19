@@ -17,8 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 # Update your import line to pull all three necessary views
 from rfid_datacoming.views import process_rfid, check_buffer, register_user_submit
+from users import views as user_views
 
 urlpatterns = [
     # Django Administrative Panel Portal
@@ -27,7 +29,13 @@ urlpatterns = [
     # 1. HARDWARE GATEWAY ENDPOINTS
     path('api/rfid/process/', process_rfid, name='api-rfid-process'),
     path('api/rfid/check-buffer/', check_buffer, name='api-rfid-check-buffer'),
+    path('login/', auth_views.LoginView.as_view(template_name = 'users/login.html'), name = 'login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name = 'users/logout.html'), name = 'logout'),
+    path('profile/', user_views.profile, name = 'profile'),
     path('api/rfid/register-submit/', register_user_submit, name='api-rfid-register-submit'),
+    path('password-reset/', 
+         auth_views.PasswordResetView.as_view(template_name = 'users/password_reset.html'), 
+         name = 'password_reset'),
 
     # 2. WEB USER DASHBOARD INTERFACES
     path('', include('users.urls')),

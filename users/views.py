@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import UserRegisterForm
 from .models import AttendanceLog
+from storage.models import Teammates
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
@@ -45,9 +46,18 @@ def register(request):
             REGISTRATION_BUFFER.clear()
             
             messages.success(request, "User registered successfully without token leaks!")
-            return redirect('homepg')
+            return redirect('profile')
     else:
         # Pass the token for initial GET initialization tracking
         form = UserRegisterForm(rfid_number=hidden_uid)
         
     return render(request, 'users/register.html', {'form': form})
+
+def profile(request):
+     user_storage_records = Teammates.objects.filter(author = request.user)
+
+     context = {
+          'records': user_storage_records
+     }
+     return render(request, 'user/profile.html',context)
+
