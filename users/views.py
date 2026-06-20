@@ -55,9 +55,11 @@ def register(request):
         
     return render(request, 'users/register.html', {'form': form})
 
+
 def login(request):
     return render(request, 'users/login.html')
 
+@login_required
 def profile(request):
      user_storage_records = Teammates.objects.filter(author = request.user)
 
