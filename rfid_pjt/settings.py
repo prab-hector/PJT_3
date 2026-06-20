@@ -137,33 +137,20 @@ from pathlib import Path
 import os
 from pathlib import Path
 
-# Ensure BASE_DIR is properly defined at the top of your file
-BASE_DIR = Path(__file__).resolve().parent.parent
+# 1. Base Directory Definition (Only define this once at the very top of your file)
+# BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 1. The URL path used to access static assets in the browser
+# 2. Static Files (CSS, JavaScript, Images) Configuration
 STATIC_URL = '/static/'
 
-# 2. The absolute filesystem path where collectstatic will gather everything
-STATIC_ROOT = BASE_DIR / 'static'
-
-# 3. Directories where Django searches for app-independent source static assets
+# Where Django looks for your local development assets
 STATICFILES_DIRS = [
-    # BASE_DIR / 'mystaticdir', # Uncomment only if you use an explicit global assets folder
+    BASE_DIR / "storage" / "static",
 ]
 
-import os
-from pathlib import Path
+# Where Django will collect all static files for deployment (production)
+STATIC_ROOT = BASE_DIR / 'static_deployed'
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Absolute filesystem path to the directory that will hold user-uploaded media.
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# URL that handles the media served from MEDIA_ROOT.
+# 3. Media Files (User Uploads) Configuration
 MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

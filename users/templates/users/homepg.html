@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,7 +62,7 @@
             display: block;
         }
 
-        /* RESTORED PROFILE BUTTON AND DROPDOWN ARRANGEMENT */
+        /* PROFILE BUTTON AND DROPDOWN ARRANGEMENT */
         .user-login-profile-badge {
             display: flex;
             align-items: center;
@@ -141,7 +142,7 @@
             box-sizing: border-box;
         }
         
-        /* RESTORED ORIGINAL CHROME-STYLE NATIVE CALENDAR COMPONENT */
+        /* NATIVE CALENDAR COMPONENT */
         .date-picker-wrapper {
             position: relative;
             width: 240px;
@@ -158,7 +159,6 @@
             box-sizing: border-box;
             font-family: inherit;
         }
-        /* Style dark mode calendar picker icon cleanly */
         .date-picker-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
@@ -224,7 +224,7 @@
             </div>
 
             <div class="navbar-cosmos-banner">
-                <img src="/static/images/image_af1b4b.jpg" alt="Cosmos Space Banner" onerror="this.src='https://i.ibb.co/68v0wpy/space-placeholder.jpg';">
+                <img src="{% static 'images/cosmos.jpg' %}" alt="Cosmos">
             </div>
 
             <div class="user-login-profile-badge">
