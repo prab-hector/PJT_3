@@ -92,6 +92,7 @@
             color: #ffffff;
             cursor: pointer;
             padding: 4px;
+            text-decoration: none; /* Reset link underline default styling */
         }
         .avatar-circle {
             width: 36px;
@@ -233,16 +234,16 @@
                     Gateway Online
                 </div>
                 
-                <button class="profile-trigger-btn">
-                    <div class="avatar-circle">R</div>
+                <a href="{% url 'login' %}" class="profile-trigger-btn">
+                    <div class="avatar-circle">P</div>
                     <div class="profile-meta-text">
-                        <span class="user-name">login</span>
+                        <span class="user-name">Profile Button</span>
                         <span class="user-role">root user</span>
                     </div>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;">
                         <path d="M6 9l6 6 6-6"/>
                     </svg>
-                </button>
+                </a>
             </div>
 
         </header>
@@ -254,7 +255,7 @@
             </div>
 
             <div class="date-picker-wrapper">
-                <input type="date" value="2026-06-18">
+                <input type="date" id="attendance-date-picker">
             </div>
 
             <div class="report-display-pane">
@@ -276,5 +277,24 @@
 
     </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const datePicker = document.getElementById("attendance-date-picker");
+            const today = new Date();
+            
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            
+            // Generate standard ISO formatted string representations
+            const currentFormattedDay = `${year}-${month}-${day}`;
+            const firstDayOfMonth = `${year}-${month}-01`;
+            
+            // Apply maximum and minimum constraints to block previous and future months
+            datePicker.value = currentFormattedDay;
+            datePicker.min = firstDayOfMonth;
+            datePicker.max = currentFormattedDay;
+        });
+    </script>
 </body>
 </html>
