@@ -16,20 +16,84 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-        .cosmos-banner {
-            width: 100%;
-            max-height: 320px;
-            overflow: hidden;
-            border-radius: 12px;
-            border: 1px solid #1f1f1f;
+        
+        /* HEADER TOP NAVIGATION BAR SETUP */
+        .navbar-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #090a0f;
+            border: 1px solid #141722;
+            padding: 12px 24px;
+            border-radius: 10px;
             margin-bottom: 24px;
+            gap: 20px;
         }
-        .cosmos-banner img {
+        .app-logo-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 200px;
+        }
+        .logo-icon {
+            background-color: #2563eb;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* NEW CENTERED COSMOS BANNER FRAME */
+        .navbar-cosmos-banner {
+            flex: 1;
+            height: 50px;
+            overflow: hidden;
+            border-radius: 6px;
+            border: 1px solid #1f242e;
+        }
+        .navbar-cosmos-banner img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
+
+        .user-login-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+            justify-content: flex-end;
+        }
+        .status-dot-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #0c1917;
+            border: 1px solid #10b981;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #10b981;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            background-color: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* CONTROLS ROW INTERFACE CONFIGURATION */
         .controls-row {
             display: flex;
             gap: 16px;
@@ -38,7 +102,6 @@
         }
         .search-filter-wrapper {
             flex: 1;
-            position: relative;
         }
         .search-filter-wrapper input {
             width: 100%;
@@ -73,14 +136,17 @@
             border-radius: 8px;
             padding: 14px 16px;
             font-size: 14px;
-            color: #9ca3af;
+            color: #ffffff;
+            font-weight: 500;
             box-sizing: border-box;
         }
+
+        /* DATA MONITOR FRAME BUFFER */
         .status-container {
             background-color: #090a0f;
             border: 1px solid #141722;
             border-radius: 12px;
-            padding: 80px 20px;
+            padding: 100px 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -109,9 +175,32 @@
 
     <div class="dashboard-container">
 
-        <div class="cosmos-banner">
-            <img src="/static/images/image_af1b4b.jpg" alt="Cosmos Stream Gateway Header">
-        </div>
+        <header class="navbar-header-row">
+            
+            <div class="app-logo-block">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                </div>
+                <span>Telemetry Dashboard</span>
+            </div>
+
+            <div class="navbar-cosmos-banner">
+                <img src="/static/image_af1b4b.jpg" alt="Cosmos Space Banner" onerror="this.src='https://i.ibb.co/68v0wpy/space-placeholder.jpg';">
+            </div>
+
+            <div class="user-login-profile-badge">
+                <div class="status-dot-indicator">
+                    <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; margin-right: 2px;"></span>
+                    Gateway Online
+                </div>
+                <div class="avatar-circle">R</div>
+            </div>
+
+        </header>
 
         <div class="controls-row">
             
@@ -129,19 +218,18 @@
 
         </div>
 
-        <div class="status-container">
+        <main class="status-container">
             <div class="status-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12a7 7 0 0 1 14 0M12 9v4M12 17h.01"/>
                     <path d="M9 15a3 3 0 0 1 6 0"/>
                 </svg>
             </div>
             <div class="status-title">Awaiting Orbital Stream Transmissions</div>
             <div class="status-subtitle">System buffer listening for real-time validation data packages from local ESP32 gateway microcontrollers...</div>
-        </div>
+        </main>
 
     </div>
 
 </body>
 </html>
-
