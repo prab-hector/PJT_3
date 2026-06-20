@@ -1,4 +1,3 @@
-# Create your views here.
 import os
 import json
 import gspread
@@ -6,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
 from oauth2client.service_account import ServiceAccountCredentials
-from storage.models import RFIDLog
+from storage.models import AttendanceLog
 
 def export_current_month_on_demand(request):
     if request.method == "POST":
@@ -22,8 +21,8 @@ def export_current_month_on_demand(request):
         start_date = now.date().replace(day=1)  # 1st day of the current month
         end_date = now.date()                  # Today's date
 
-        # 2. Gather records without deleting them (since the month isn't over!)
-        logs_to_export = RFIDLog.objects.filter(
+        # 2. Gather records using our unified AttendanceLog model
+        logs_to_export = AttendanceLog.objects.filter(
             timestamp__date__range=[start_date, end_date]
         ).select_related('teammates')
 
@@ -65,22 +64,23 @@ def export_current_month_on_demand(request):
         
         worksheet.append_row(["Student Name", "Branch", "RFID UID", "Scan Timestamp"])
 
-        # 6. Matrix Compilation
+        # 6. Matrix Compilation (Fixed Field References)
         rows_to_append = []
         for log in logs_to_export:
-            has_profile = hasattr(log, 'teammates') and log.teammates is not None
+            # Safely check if the log entry points to a registered user profile
+            has_profile = log.teammates is not None
+            
             rows_to_append.append([
                 log.teammates.name if has_profile else "Unknown Token",
                 log.teammates.branch if has_profile else "N/A",
-                log.uid,
+                log.teammates.rfid_number if has_profile else "UNKNOWN", # Fixed: Extracting card ID from teammate relation
                 timezone.localtime(log.timestamp).strftime("%Y-%m-%d %H:%M:%S")
             ])
 
         # Push payload array to cloud endpoint
         worksheet.append_rows(rows_to_append)
 
-        # 7. CRITICAL CHANGE: Do NOT delete the local records because the month hasn't ended.
-        # Instead, redirect the user straight to the live master sheet link!
+        # 7. Redirect straight to the live updated master sheet link
         spreadsheet_url = f"https://docs.google.com/spreadsheets/d/{sheet.id}/edit#gid={worksheet.id}"
         return redirect(spreadsheet_url)
 

@@ -6,6 +6,7 @@ urlpatterns = [
     # URL: https://nli.pythonanywhere.com/
     path('', views.home_dashboard, name='homepg'),
     path('login/', views.login, name = 'login'),
+    path('register/<int:teammate_id>/', views.register, name='register'),
     
     # Secure blind student data entry onboarding portal
     # URL: https://nli.pythonanywhere.com/register/

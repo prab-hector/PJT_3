@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import UserRegisterForm
-from .models import AttendanceLog
+from storage.models import AttendanceLog
 from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, StorageUpdateForm, ProfileUserUpdateForm
@@ -11,7 +11,6 @@ import calendar
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
-from rfid_datacoming.views import REGISTRATION_BUFFER
 
 def home_dashboard(request):
 
@@ -44,34 +43,51 @@ def home_dashboard(request):
     }
     return render(request, 'users/homepg.html', context)
 
-
-def register(request):
-    # 1. Pull the hidden token and master status from server cache RAM
-    hidden_uid = REGISTRATION_BUFFER.get('temporary_hidden_uid')
-    master_scanned = REGISTRATION_BUFFER.get('master_scanned', False)
+def register(request, teammate_id=None):
+    # 1. Safely locate the skeleton database profile created by the hardware tap
+    profile_instance = None
+    hidden_uid = None
     
-    # 2. Security Wall: Kick them back out to home dashboard if no active hardware session is staged/active
-    if not hidden_uid and not master_scanned:
-        messages.error(request, "Access Denied: Please tap the Add-User Master Card first.")
-        return redirect('homepg') 
-
-    if request.method == 'POST':
-        # 3. Securely pass the secret token directly to the form instance constructor
-        form = UserRegisterForm(request.POST, initial={'rfid_number': hidden_uid})
-        if form.is_valid():
-            form.save() # Persists User and Teammates entry with zero frontend exposure
-            
-            # 4. Clear the memory slot completely
-            REGISTRATION_BUFFER.clear()
-            
-            messages.success(request, "User registered successfully without token leaks!")
-            return redirect('profile')
+    if teammate_id:
+        profile_instance = get_object_or_404(Teammates, id=teammate_id)
+        hidden_uid = profile_instance.rfid_number
     else:
-        # Pass the token for initial GET initialization tracking
-        form = UserRegisterForm(initial={'rfid_number': hidden_uid})
+        # Fallback security if someone hits /register/ without a skeleton row ID
+        messages.error(request, "Access Denied: No active card registration session found.")
+        return redirect('homepg')
+
+    # 2. Handle Form Submission
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST, rfid_number=hidden_uid)
+        if form.is_valid():
+            saved_user = form.save()
+            
+            # Update the existing placeholder row state to active
+            if profile_instance:
+                profile_instance.is_fully_registered = True
+                profile_instance.save()
+                
+            messages.success(request, f"Profile info for {saved_user.username} finalized successfully!")
+            return redirect('homepg')
+            
+    # 3. Handle Initial Form Render (GET Request)
+    else:
+        initial_data = {}
+        if profile_instance:
+            initial_data = {
+                'branch': profile_instance.branch,
+                'year': profile_instance.year,
+                'phone_number': profile_instance.phone_number
+            }
+        form = UserRegisterForm(initial=initial_data, rfid_number=hidden_uid)
         
     return render(request, 'users/register.html', {'form': form})
 
+def login(request):
+    """
+    Authentication View: Renders user portal entry page template layout context.
+    """
+    return render(request, 'users/login.html')
 
 def login(request):
     return render(request, 'users/login.html')

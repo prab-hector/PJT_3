@@ -24,7 +24,7 @@ class UserRegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email']
+        fields = ['username', 'email','branch', 'year', 'division', 'phone_number']
 
     # Custom initializer to securely inject the RFID token from the view layer
     def __init__(self, *args, **kwargs):

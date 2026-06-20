@@ -2,35 +2,39 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-# Create your models here.
 class Teammates(models.Model):
+    """
+    Unified User Profile & Hardware Status Table
+    """
     name = models.CharField(max_length=30)
     branch = models.CharField(max_length=30)
     email = models.EmailField(max_length=254, null=True, blank=True)
-    phone_number = models.CharField(max_length=10, null=False, blank=False)
+    phone_number = models.CharField(max_length=10)
     year = models.CharField(max_length=30)
-    rfid_number = models.CharField(max_length=8)
+    rfid_number = models.CharField(max_length=8, unique=True) # Unique enforces clean database records
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    # SYSTEM STATE MANAGER: Tracks if a card profile profile is fully setup or placeholder
+    is_fully_registered = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
-    
+        status_flag = "" if self.is_fully_registered else " [PENDING SUBMISSION]"
+        return f"{self.name}{status_flag}"
 
-class RFIDLog(models.Model):
-    rfid_number = models.CharField(max_length=8)
-    date_posted = models.DateTimeField(default=timezone.now)
+
+class AttendanceLog(models.Model):
+    """
+    Unified System Event Log
+    """
+    # Links directly to our teammate if known, or leaves blank if an unknown scan happens
+    teammate = models.ForeignKey(Teammates, on_delete=models.CASCADE, null=True, blank=True)
+    rfid_scanned = models.CharField(max_length=8)
     timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # Stores outcomes like: "Present", "System Mode: Add Users", "Access Denied"
+    status = models.CharField(max_length=50, default="Present")
 
     def __str__(self):
-        return f"UID: {self.rfid_number} at {self.timestamp}"
-    
-
-class SystemSetting(models.Model):
-    key = models.CharField(max_length=50, unique=True)
-    value = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.key}: {self.value}"
-    
-
+        name = self.teammate.name if self.teammate else f"Unknown ({self.rfid_scanned})"
+        return f"{name} - {self.status} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
