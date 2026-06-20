@@ -1,5 +1,3 @@
-from django.urls import path
-from . import views
 
 from django.urls import path
 from . import views
@@ -11,4 +9,5 @@ urlpatterns = [
     
     # Secure teammate data entry onboarding registration portal
     path('register/', views.register, name='register'), 
+    path('register/<int:teammate_id>/', views.register, name='register'),
 ]

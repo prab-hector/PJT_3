@@ -15,7 +15,7 @@ def check_buffer(request):
     if request.method == 'POST':
         REGISTRATION_MODE_ACTIVE = False
         Teammates.objects.filter(name="New Flagged Card User").delete()
-        return JsonResponse({'status': 'success', 'message': 'Buffer cleared cleanly.'})
+        return JsonResponse({'status': 'success', 'message': 'Staging pipeline reset.'})
         
     staged_card = Teammates.objects.filter(name="New Flagged Card User").order_by('-date_posted').first()
     
@@ -62,7 +62,7 @@ def process_rfid(request):
         try:
             teammate = Teammates.objects.get(rfid_number=rfid_uid)
             if teammate.name == "New Flagged Card User":
-                return JsonResponse({'status': 'waiting', 'message': 'Profile registration form pending.'}, status=200)
+                return JsonResponse({'status': 'waiting', 'message': 'Profile pending.'}, status=200)
                 
             AttendanceLog.objects.create(teammates=teammate, status="Present")
             return JsonResponse({'status': 'success', 'message': f'Welcome {teammate.name}'}, status=200)
@@ -93,7 +93,6 @@ def register_user_submit(request):
         return JsonResponse({'status': 'error', 'message': 'Method Denied'}, status=400)
         
     try:
-        # Added flexible decoding to handle both JSON payloads and serialized form bodies seamlessly
         if request.content_type == 'application/json':
             data = json.loads(request.body)
         else:
@@ -107,12 +106,12 @@ def register_user_submit(request):
         user_email = data.get('email', '').strip() or None
 
         if not username or not branch_name or not rfid_uid:
-            return JsonResponse({'status': 'error', 'message': 'Required profile registration fields are empty'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Required fields missing.'}, status=400)
             
         teammate = Teammates.objects.filter(rfid_number=rfid_uid, name="New Flagged Card User").first()
         
         if not teammate:
-            return JsonResponse({'status': 'error', 'message': 'No staging slot active matching this card token.'}, status=404)
+            return JsonResponse({'status': 'error', 'message': 'No active staging profile found for this card.'}, status=404)
             
         teammate.name = username
         teammate.branch = branch_name
