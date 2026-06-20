@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telemetry Dashboard</title>
+    <title>Attendance Page</title>
     <style>
         body {
             background-color: #050505;
@@ -46,7 +46,7 @@
             justify-content: center;
         }
 
-        /* NEW CENTERED COSMOS BANNER FRAME */
+        /* CENTERED COSMOS BANNER FRAME */
         .navbar-cosmos-banner {
             flex: 1;
             height: 50px;
@@ -61,11 +61,12 @@
             display: block;
         }
 
+        /* RESTORED PROFILE BUTTON AND DROPDOWN ARRANGEMENT */
         .user-login-profile-badge {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 180px;
+            gap: 16px;
+            min-width: 280px;
             justify-content: flex-end;
         }
         .status-dot-indicator {
@@ -81,6 +82,16 @@
             text-transform: uppercase;
             font-weight: 600;
         }
+        .profile-trigger-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 4px;
+        }
         .avatar-circle {
             width: 36px;
             height: 36px;
@@ -91,6 +102,21 @@
             justify-content: center;
             font-weight: bold;
             font-size: 14px;
+            color: #ffffff;
+        }
+        .profile-meta-text {
+            text-align: left;
+            font-size: 13px;
+        }
+        .profile-meta-text .user-name {
+            font-weight: 600;
+            display: block;
+        }
+        .profile-meta-text .user-role {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* CONTROLS ROW INTERFACE CONFIGURATION */
@@ -114,21 +140,30 @@
             outline: none;
             box-sizing: border-box;
         }
+        
+        /* RESTORED ORIGINAL CHROME-STYLE NATIVE CALENDAR COMPONENT */
         .date-picker-wrapper {
-            width: 220px;
+            position: relative;
+            width: 240px;
         }
-        .date-picker-wrapper input {
+        .date-picker-wrapper input[type="date"] {
             width: 100%;
             background-color: #0f1115;
             border: 1px solid #1f242e;
             border-radius: 8px;
-            padding: 14px 16px;
+            padding: 13px 16px;
             color: #ffffff;
             font-size: 14px;
-            text-align: center;
             outline: none;
             box-sizing: border-box;
+            font-family: inherit;
         }
+        /* Style dark mode calendar picker icon cleanly */
+        .date-picker-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
         .report-display-pane {
             width: 320px;
             background-color: #0f1115;
@@ -185,11 +220,11 @@
                         <polyline points="2 12 12 17 22 12"/>
                     </svg>
                 </div>
-                <span>Telemetry Dashboard</span>
+                <span>Attendance Page</span>
             </div>
 
             <div class="navbar-cosmos-banner">
-                <img src="/static/image_af1b4b.jpg" alt="Cosmos Space Banner" onerror="this.src='https://i.ibb.co/68v0wpy/space-placeholder.jpg';">
+                <img src="/static/images/image_af1b4b.jpg" alt="Cosmos Space Banner" onerror="this.src='https://i.ibb.co/68v0wpy/space-placeholder.jpg';">
             </div>
 
             <div class="user-login-profile-badge">
@@ -197,7 +232,17 @@
                     <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; margin-right: 2px;"></span>
                     Gateway Online
                 </div>
-                <div class="avatar-circle">R</div>
+                
+                <button class="profile-trigger-btn">
+                    <div class="avatar-circle">R</div>
+                    <div class="profile-meta-text">
+                        <span class="user-name">login</span>
+                        <span class="user-role">root user</span>
+                    </div>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
             </div>
 
         </header>
@@ -209,7 +254,7 @@
             </div>
 
             <div class="date-picker-wrapper">
-                <input type="text" value="18-06-2026" readonly>
+                <input type="date" value="2026-06-18">
             </div>
 
             <div class="report-display-pane">
