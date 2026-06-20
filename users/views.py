@@ -57,7 +57,7 @@ def register(request):
 
     if request.method == 'POST':
         # 3. Securely pass the secret token directly to the form instance constructor
-        form = UserRegisterForm(request.POST, rfid_number=hidden_uid)
+        form = UserRegisterForm(request.POST, initial={'rfid_number': hidden_uid})
         if form.is_valid():
             form.save() # Persists User and Teammates entry with zero frontend exposure
             
@@ -68,7 +68,7 @@ def register(request):
             return redirect('profile')
     else:
         # Pass the token for initial GET initialization tracking
-        form = UserRegisterForm(rfid_number=hidden_uid)
+        form = UserRegisterForm(initial={'rfid_number': hidden_uid})
         
     return render(request, 'users/register.html', {'form': form})
 

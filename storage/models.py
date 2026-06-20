@@ -23,6 +23,14 @@ class RFIDLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"UID: {self.uid} at {self.timestamp}"
+        return f"UID: {self.rfid_number} at {self.timestamp}"
+    
+
+class SystemSetting(models.Model):
+    key = models.CharField(max_length=50, unique=True)
+    value = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
     
 
