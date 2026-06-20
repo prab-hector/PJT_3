@@ -7,33 +7,13 @@
     <title>Teammate Registration System - NLLRFID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: pulse 3.5s infinite ease-in-out;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.15; transform: scale(0.8); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-    </style>
 </head>
-<body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center relative overflow-x-hidden font-sans selection:bg-blue-600/30 p-4">
+<body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center relative p-4">
 
-    <div class="absolute inset-0 pointer-events-none z-0">
-        <div class="star w-1 h-1 top-12 left-1/4" style="animation-delay: 0.2s;"></div>
-        <div class="star w-1.5 h-1.5 top-1/3 left-12" style="animation-delay: 1.1s;"></div>
-        <div class="star w-1 h-1 top-1/4 right-24" style="animation-delay: 0.7s;"></div>
-        <div class="star w-2 h-2 bottom-1/4 left-1/3" style="animation-delay: 1.5s;"></div>
-        <div class="star w-1 h-1 bottom-12 right-1/4" style="animation-delay: 0.4s;"></div>
-    </div>
-
-    <div class="w-full max-w-lg p-8 space-y-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md relative z-10 my-6">
+    <div class="w-full max-w-lg p-8 space-y-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md relative my-6">
         
         <div class="flex items-center space-x-3 pb-2 border-b border-zinc-800/60">
-            <div class="p-2.5 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-950/50">
+            <div class="p-2.5 bg-blue-600 rounded-xl text-white shadow-lg">
                 <i class="fas fa-user-plus fa-sm"></i>
             </div>
             <div>
@@ -47,70 +27,65 @@
         </div>
 
         <form id="registrationForm" class="space-y-4">
-            
             <div>
                 <label for="rfid_number" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Staged RFID Token UID</label>
                 <div class="relative">
                     <span class="absolute left-4 top-3.5 text-zinc-600 text-sm"><i class="fas fa-id-card"></i></span>
                     <input type="text" id="rfid_number" placeholder="Scan your card on the device..." readonly required
-                           class="w-full pl-11 pr-4 py-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-sm text-zinc-400 focus:outline-none cursor-not-allowed">
+                           class="w-full pl-11 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-400 focus:outline-none cursor-not-allowed">
                 </div>
             </div>
 
             <div>
                 <label for="name" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Full Name</label>
                 <input type="text" id="name" placeholder="Enter teammate name" required
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
             </div>
 
             <div>
                 <label for="department" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Department / Branch</label>
                 <input type="text" id="department" placeholder="e.g., Computer Engineering" required
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
             </div>
 
             <div>
                 <label for="year" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Academic Year</label>
                 <div class="relative">
-                    <select id="year" class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all cursor-pointer appearance-none">
+                    <select id="year" class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 focus:outline-none appearance-none cursor-pointer">
                         <option value="First Year">First Year</option>
                         <option value="Second Year">Second Year</option>
                         <option value="Third Year">Third Year</option>
                         <option value="Fourth Year">Fourth Year</option>
                     </select>
-                    <span class="absolute right-4 top-4 text-zinc-600 text-xs pointer-events-none"><i class="fas fa-chevron-down"></i></span>
                 </div>
             </div>
 
             <div>
                 <label for="phone" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Phone Number</label>
                 <input type="text" id="phone" placeholder="Enter 10-digit number" value="0000000000"
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white font-mono focus:outline-none">
             </div>
 
             <div>
                 <label for="email" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Email Address</label>
                 <input type="email" id="email" placeholder="name@example.com"
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none">
             </div>
 
             <div class="pt-2 space-y-2.5">
-                <button type="submit" 
-                        class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-950/50 transition-all transform active:scale-[0.99]">
+                <button type="submit" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all">
                     Commit Profile to Database
                 </button>
-                <button type="button" id="cancelBtn" 
-                        class="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700/80 text-zinc-300 hover:text-white border border-zinc-700/60 font-medium rounded-xl transition-all">
+                <button type="button" id="cancelBtn" class="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-all">
                     Cancel & Return to Dashboard
                 </button>
             </div>
         </form>
 
-        <div id="message" class="p-3.5 rounded-xl text-xs font-semibold tracking-wide hidden"></div>
+        <div id="message" class="p-3.5 rounded-xl text-xs font-semibold hidden"></div>
     </div>
 
     <script>
-        // --- STEP 1: BACKGROUND HARDWARE POLLING LOOP ---
         async function checkStagedCard() {
             try {
                 let response = await fetch('/api/rfid/check-buffer/'); 
@@ -123,34 +98,31 @@
                         if (rfidInput.value !== data.rfid_id) {
                             rfidInput.value = data.rfid_id;
                             statusBox.innerText = "Status: Card " + data.rfid_id + " Staged Successfully!";
-                            statusBox.className = "p-4 bg-green-950/40 border-l-4 border-green-500 text-sm font-semibold text-green-400 rounded-r-xl transition-all";
+                            statusBox.className = "p-4 bg-green-950/40 border-l-4 border-green-500 text-sm font-semibold text-green-400 rounded-r-xl";
                         }
                     } else if (data.master_scanned) {
                         statusBox.innerText = "Status: Master Card Scanned. Please tap the new card...";
-                        statusBox.className = "p-4 bg-yellow-950/40 border-l-4 border-yellow-500 text-sm font-semibold text-yellow-400 rounded-r-xl transition-all animate-pulse";
+                        statusBox.className = "p-4 bg-yellow-950/40 border-l-4 border-yellow-500 text-sm font-semibold text-yellow-400 rounded-r-xl animate-pulse";
                         rfidInput.value = "";
                     } else {
                         statusBox.innerText = "Status: Waiting for hardware card scan...";
-                        statusBox.className = "p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl transition-all";
+                        statusBox.className = "p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl";
                         rfidInput.value = "";
                     }
                 }
             } catch (err) {
-                console.error("Polling connection link resting: ", err);
+                console.error("Polling error: ", err);
             }
         }
 
-        // Expanded polling window to 4000ms to free up request queues for PythonAnywhere free tier
         setInterval(checkStagedCard, 4000);
 
-        // --- STEP 2: ASYNCHRONOUS FORM SUBMISSION LOGIC ---
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const msgDiv = document.getElementById('message');
             const payload = {
                 rfid_id: document.getElementById('rfid_number').value,
-                name: document.getElementById('name').value.trim ? document.getElementById('name').value.trim() : document.getElementById('name').value,
+                name: document.getElementById('name').value.trim(),
                 department: document.getElementById('department').value,
                 year: document.getElementById('year').value,
                 phone: document.getElementById('phone').value,
@@ -163,253 +135,30 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 let result = await response.json();
 
                 if (response.ok && result.status === 'success') {
-                    msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold tracking-wide block bg-green-950/50 border border-green-800 text-green-400";
-                    msgDiv.innerText = "Success: " + result.message + " Redirecting to dashboard...";
-                    
-                    document.getElementById('registrationForm').reset();
-                    const statusBox = document.getElementById('scanStatus');
-                    statusBox.innerText = "Status: Waiting for hardware card scan...";
-                    statusBox.className = "p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl";
-                    
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 2000);
+                    msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold block bg-green-950/50 border border-green-800 text-green-400";
+                    msgDiv.innerText = "Success: Profile created. Redirecting...";
+                    setTimeout(() => { window.location.href = '/'; }, 1500);
                 } else {
-                    showError(result.message || "Failed to commit record profile details.");
+                    showError(result.message);
                 }
             } catch (error) {
-                showError("Network connection error handling transaction profile update.");
+                showError("Network connection error handling request.");
             }
         });
 
-        // --- STEP 3: CANCEL BUTTON HANDLER ---
         document.getElementById('cancelBtn').addEventListener('click', async function() {
             try {
-                await fetch('/api/rfid/check-buffer/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (err) {
-                console.error("Error clearing buffer: ", err);
-            }
+                await fetch('/api/rfid/check-buffer/', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            } catch (err) {}
             window.location.href = '/';
         });
 
         function showError(text) {
             const msgDiv = document.getElementById('message');
-            msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold tracking-wide block bg-red-950/50 border border-red-800 text-red-400";
-            msgDiv.innerText = "Error: " + text;
-        }
-    </script>
-</body>
-</html>{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teammate Registration System - NLLRFID</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: pulse 3.5s infinite ease-in-out;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.15; transform: scale(0.8); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-    </style>
-</head>
-<body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center relative overflow-x-hidden font-sans selection:bg-blue-600/30 p-4">
-
-    <div class="absolute inset-0 pointer-events-none z-0">
-        <div class="star w-1 h-1 top-12 left-1/4" style="animation-delay: 0.2s;"></div>
-        <div class="star w-1.5 h-1.5 top-1/3 left-12" style="animation-delay: 1.1s;"></div>
-        <div class="star w-1 h-1 top-1/4 right-24" style="animation-delay: 0.7s;"></div>
-        <div class="star w-2 h-2 bottom-1/4 left-1/3" style="animation-delay: 1.5s;"></div>
-        <div class="star w-1 h-1 bottom-12 right-1/4" style="animation-delay: 0.4s;"></div>
-    </div>
-
-    <div class="w-full max-w-lg p-8 space-y-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-2xl backdrop-blur-md relative z-10 my-6">
-        
-        <div class="flex items-center space-x-3 pb-2 border-b border-zinc-800/60">
-            <div class="p-2.5 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-950/50">
-                <i class="fas fa-user-plus fa-sm"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold tracking-tight text-white">Add New Teammate Profile</h2>
-                <p class="text-xs text-zinc-500">Provision identity parameters to system pipeline.</p>
-            </div>
-        </div>
-        
-        <div id="scanStatus" class="p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl transition-all">
-            Status: Waiting for hardware card scan...
-        </div>
-
-        <form id="registrationForm" class="space-y-4">
-            
-            <div>
-                <label for="rfid_number" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Staged RFID Token UID</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-3.5 text-zinc-600 text-sm"><i class="fas fa-id-card"></i></span>
-                    <input type="text" id="rfid_number" placeholder="Scan your card on the device..." readonly required
-                           class="w-full pl-11 pr-4 py-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-sm text-zinc-400 focus:outline-none cursor-not-allowed">
-                </div>
-            </div>
-
-            <div>
-                <label for="name" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Full Name</label>
-                <input type="text" id="name" placeholder="Enter teammate name" required
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
-            </div>
-
-            <div>
-                <label for="department" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Department / Branch</label>
-                <input type="text" id="department" placeholder="e.g., Computer Engineering" required
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
-            </div>
-
-            <div>
-                <label for="year" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Academic Year</label>
-                <div class="relative">
-                    <select id="year" class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all cursor-pointer appearance-none">
-                        <option value="First Year">First Year</option>
-                        <option value="Second Year">Second Year</option>
-                        <option value="Third Year">Third Year</option>
-                        <option value="Fourth Year">Fourth Year</option>
-                    </select>
-                    <span class="absolute right-4 top-4 text-zinc-600 text-xs pointer-events-none"><i class="fas fa-chevron-down"></i></span>
-                </div>
-            </div>
-
-            <div>
-                <label for="phone" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Phone Number</label>
-                <input type="text" id="phone" placeholder="Enter 10-digit number" value="0000000000"
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
-            </div>
-
-            <div>
-                <label for="email" class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Email Address</label>
-                <input type="email" id="email" placeholder="name@example.com"
-                       class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
-            </div>
-
-            <div class="pt-2 space-y-2.5">
-                <button type="submit" 
-                        class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-950/50 transition-all transform active:scale-[0.99]">
-                    Commit Profile to Database
-                </button>
-                <button type="button" id="cancelBtn" 
-                        class="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700/80 text-zinc-300 hover:text-white border border-zinc-700/60 font-medium rounded-xl transition-all">
-                    Cancel & Return to Dashboard
-                </button>
-            </div>
-        </form>
-
-        <div id="message" class="p-3.5 rounded-xl text-xs font-semibold tracking-wide hidden"></div>
-    </div>
-
-    <script>
-        // --- STEP 1: BACKGROUND HARDWARE POLLING LOOP ---
-        async function checkStagedCard() {
-            try {
-                let response = await fetch('/api/rfid/check-buffer/'); 
-                if (response.ok) {
-                    let data = await response.json();
-                    const statusBox = document.getElementById('scanStatus');
-                    const rfidInput = document.getElementById('rfid_number');
-                    
-                    if (data.card_staged && data.rfid_id) {
-                        if (rfidInput.value !== data.rfid_id) {
-                            rfidInput.value = data.rfid_id;
-                            statusBox.innerText = "Status: Card " + data.rfid_id + " Staged Successfully!";
-                            statusBox.className = "p-4 bg-green-950/40 border-l-4 border-green-500 text-sm font-semibold text-green-400 rounded-r-xl transition-all";
-                        }
-                    } else if (data.master_scanned) {
-                        statusBox.innerText = "Status: Master Card Scanned. Please tap the new card...";
-                        statusBox.className = "p-4 bg-yellow-950/40 border-l-4 border-yellow-500 text-sm font-semibold text-yellow-400 rounded-r-xl transition-all animate-pulse";
-                        rfidInput.value = "";
-                    } else {
-                        statusBox.innerText = "Status: Waiting for hardware card scan...";
-                        statusBox.className = "p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl transition-all";
-                        rfidInput.value = "";
-                    }
-                }
-            } catch (err) {
-                console.error("Polling connection link resting: ", err);
-            }
-        }
-
-        // Expanded polling window to 4000ms to free up request queues for PythonAnywhere free tier
-        setInterval(checkStagedCard, 4000);
-
-        // --- STEP 2: ASYNCHRONOUS FORM SUBMISSION LOGIC ---
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const msgDiv = document.getElementById('message');
-            const payload = {
-                rfid_id: document.getElementById('rfid_number').value,
-                name: document.getElementById('name').value.trim ? document.getElementById('name').value.trim() : document.getElementById('name').value,
-                department: document.getElementById('department').value,
-                year: document.getElementById('year').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value
-            };
-
-            try {
-                let response = await fetch('/api/rfid/register-submit/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                let result = await response.json();
-
-                if (response.ok && result.status === 'success') {
-                    msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold tracking-wide block bg-green-950/50 border border-green-800 text-green-400";
-                    msgDiv.innerText = "Success: " + result.message + " Redirecting to dashboard...";
-                    
-                    document.getElementById('registrationForm').reset();
-                    const statusBox = document.getElementById('scanStatus');
-                    statusBox.innerText = "Status: Waiting for hardware card scan...";
-                    statusBox.className = "p-4 bg-zinc-950 border-l-4 border-zinc-700 text-sm font-medium text-zinc-400 rounded-r-xl";
-                    
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 2000);
-                } else {
-                    showError(result.message || "Failed to commit record profile details.");
-                }
-            } catch (error) {
-                showError("Network connection error handling transaction profile update.");
-            }
-        });
-
-        // --- STEP 3: CANCEL BUTTON HANDLER ---
-        document.getElementById('cancelBtn').addEventListener('click', async function() {
-            try {
-                await fetch('/api/rfid/check-buffer/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (err) {
-                console.error("Error clearing buffer: ", err);
-            }
-            window.location.href = '/';
-        });
-
-        function showError(text) {
-            const msgDiv = document.getElementById('message');
-            msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold tracking-wide block bg-red-950/50 border border-red-800 text-red-400";
+            msgDiv.className = "p-3.5 rounded-xl text-xs font-semibold block bg-red-950/50 border border-red-800 text-red-400";
             msgDiv.innerText = "Error: " + text;
         }
     </script>
