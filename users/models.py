@@ -1,5 +1,8 @@
 from django.db import models
 from storage.models import Teammates
+
+from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 # Create your models here.
 class AttendanceLog(models.Model):
     teammates = models.ForeignKey(Teammates, on_delete=models.CASCADE)
@@ -8,3 +11,4 @@ class AttendanceLog(models.Model):
     
     def __str__(self):
         return f"{self.teammates.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+    
