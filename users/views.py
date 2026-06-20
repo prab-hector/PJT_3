@@ -5,12 +5,28 @@ from .models import AttendanceLog
 from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, StorageUpdateForm, ProfileUserUpdateForm
+from datetime import datetime
+import calendar
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
 from rfid_datacoming.views import REGISTRATION_BUFFER
 
 def home_dashboard(request):
+
+    today = datetime.today() # Resolves to June 2026
+    
+    # Calculate boundaries
+    first_day_of_month = today.replace(day=1).strftime('%Y-%m-%d')
+    
+    # Cap selection at today's active date (no future days)
+    max_selectable_day = today.strftime('%Y-%m-%d')
+
+    context = {
+        'min_date': first_day_of_month, # '2026-06-01'
+        'max_date': max_selectable_day,   # '2026-06-20'
+    }
+
     recent_scans = AttendanceLog.objects.select_related('teammates').order_by('-timestamp')[:10]
 
     if request.user.is_authenticated:
