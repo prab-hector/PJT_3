@@ -4,6 +4,7 @@ from .forms import UserRegisterForm
 from storage.models import AttendanceLog
 from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import views
 from .forms import UserRegisterForm, StorageUpdateForm, ProfileUserUpdateForm
 from django.contrib.auth import logout as django_logout
 from datetime import datetime
@@ -136,3 +137,6 @@ def edit_profile(request):
     }
     return render(request, 'user/edit_profile.html', context)
 
+@login_required
+def reset_password(request):
+    return redirect('password_reset')
