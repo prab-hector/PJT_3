@@ -49,28 +49,40 @@ def process_rfid(request):
         ADD_MASTER = "E25B2F45"
         REMOVE_MASTER = "893997C1"
 
+        # 1. HANDLE MASTER ADD MODE
         if rfid_uid == ADD_MASTER:
             REGISTRATION_MODE_ACTIVE = True
             Teammates.objects.filter(name="New Flagged Card User").delete()
             return JsonResponse({'status': 'success', 'message': 'Staging gate active.'}, status=200)
 
+        # 2. HANDLE MASTER REMOVE MODE
         if rfid_uid == REMOVE_MASTER:
             REGISTRATION_MODE_ACTIVE = False
             Teammates.objects.filter(name="New Flagged Card User").delete()
             return JsonResponse({'status': 'success', 'message': 'Staging gate closed.'}, status=200)
 
-        try:
-            teammate = Teammates.objects.get(rfid_number=rfid_uid)
+        # 3. PROCESS STANDARD SCANS Safely (Handles duplicate row bugs cleanly)
+        existing_cards = Teammates.objects.filter(rfid_number=rfid_uid)
+        
+        if existing_cards.exists():
+            teammate = existing_cards.first()
             if teammate.name == "New Flagged Card User":
                 return JsonResponse({'status': 'waiting', 'message': 'Profile pending.'}, status=200)
                 
             AttendanceLog.objects.create(teammates=teammate, status="Present")
             return JsonResponse({'status': 'success', 'message': f'Welcome {teammate.name}'}, status=200)
             
-        except Teammates.DoesNotExist:
+        else:
+            # 4. ENROLL TARGET CARD
             if REGISTRATION_MODE_ACTIVE:
+                # Fallback mechanism if no User exists in the Auth table yet
                 current_author = User.objects.filter(is_superuser=True).first() or User.objects.first()
+                if not current_author:
+                    current_author = User.objects.create_user(username='admin_system', email='admin@system.local', password='SystemPassword123')
                 
+                # Delete any stale skeleton records to prevent duplicates
+                Teammates.objects.filter(name="New Flagged Card User").delete()
+
                 Teammates.objects.create(
                     name="New Flagged Card User",
                     branch="Unassigned",
