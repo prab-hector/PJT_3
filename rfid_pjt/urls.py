@@ -21,6 +21,7 @@ from django.contrib.auth import views as auth_views
 # Update your import line to pull all three necessary views
 from rfid_datacoming.views import process_rfid, check_buffer, register_user_submit
 from users import views as user_views
+from data_excel import views as data_excel_views
 
 urlpatterns = [
     # Django Administrative Panel Portal
@@ -35,6 +36,7 @@ urlpatterns = [
     path('register/', user_views.register, name='register'),
     path('api/rfid/register-submit/', register_user_submit, name='api-rfid-register-submit'),
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name = 'users/password_reset.html'), name = 'password_reset'),
+    path('export/on-demand/', data_excel_views.export_current_month_on_demand, name = 'export_on_demand'),
 
     # 2. WEB USER DASHBOARD INTERFACES
     path('', include('users.urls')),

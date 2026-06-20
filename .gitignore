@@ -3,5 +3,4 @@ __pycache__/
 db.sqlite3
 *.pyc
 media/
-static/
 google_creds.json
