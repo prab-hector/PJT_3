@@ -17,13 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
-# Update your import line to pull all three necessary views
+from django.contrib.auth import views as auth_views
 from rfid_datacoming.views import process_rfid, check_buffer, register_user_submit
-from users import views as user_views
-from data_excel import views as data_excel_views
 
 urlpatterns = [
     # Django Administrative Panel Portal
@@ -32,18 +29,17 @@ urlpatterns = [
     # 1. HARDWARE GATEWAY ENDPOINTS
     path('api/rfid/process/', process_rfid, name='api-rfid-process'),
     path('api/rfid/check-buffer/', check_buffer, name='api-rfid-check-buffer'),
-    path('login/', auth_views.LoginView.as_view(template_name = 'users/login.html'), name = 'login'),
-    path('logout/', auth_views.LogoutView.as_view(template_name = 'users/logout.html'), name = 'logout'),
-    path('profile/', user_views.profile, name = 'profile'),
-    path('register/', user_views.register, name='register'),
     path('api/rfid/register-submit/', register_user_submit, name='api-rfid-register-submit'),
-    path('reset_password/', auth_views.PasswordResetView.as_view(template_name = 'users/reset_password.html'), name = 'reset_password'),
-    path('password-reset-confirm/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(template_name = 'users/password_reset_Confirm.html'), name = 'password_reset_confirm'),
-    path('export/on-demand/', data_excel_views.export_current_month_on_demand, name = 'export_on_demand'),
 
+    # Authentication pathways
+    path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path('reset_password/', auth_views.PasswordResetView.as_view(template_name='users/reset_password.html'), name='reset_password'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'), name='password_reset_confirm'),
+    
     # 2. WEB USER DASHBOARD INTERFACES
     path('', include('users.urls')),
 ]
 
 if settings.DEBUG:
-   urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_FILES_DIRS[0])

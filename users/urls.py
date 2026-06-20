@@ -1,13 +1,14 @@
 from django.urls import path
 from . import views
 
+from django.urls import path
+from . import views
+
 urlpatterns = [
-    # Main landing page dashboard view tracking real-time logs
-    # URL: https://nli.pythonanywhere.com/
+    # Main landing page dashboard tracking real-time logs
     path('', views.home_dashboard, name='homepg'),
-    path('login/', views.login, name = 'login'),
-    path('register/<int:teammate_id>/', views.register, name='register'),
+    path('profile/', views.profile, name='profile'),
     
-    # Secure blind student data entry onboarding portal
-    # URL: https://nli.pythonanywhere.com/register/
+    # Secure teammate data entry onboarding registration portal
+    path('register/', views.register, name='register'), 
 ]

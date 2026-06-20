@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* Ambient cosmic background star elements */
         .star {
             position: absolute;
             background-color: white;
@@ -149,6 +148,7 @@
             
             const msgDiv = document.getElementById('message');
             const payload = {
+                rfid_id: document.getElementById('rfid_number').value, // Transmits the string key to view logic
                 name: document.getElementById('name').value.trim ? document.getElementById('name').value.trim() : document.getElementById('name').value,
                 department: document.getElementById('department').value,
                 year: document.getElementById('year').value,
