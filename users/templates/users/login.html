@@ -81,9 +81,10 @@
             </button>
         </form>
 
-        <div class="text-center pt-2 space-y-2.5 border-t border-zinc-800/60">
-            <p class="text-xs text-zinc-500">Demo build — any password works. <a href="{% url 'homepg' %}" class="text-blue-400 hover:underline font-medium">Skip to dashboard</a></p>
-            <p class="text-sm text-zinc-400">Don't have an account? <a href="{% url 'register' %}" class="text-blue-400 hover:underline font-semibold">Sign up</a></p>
+        <div class="text-center pt-2 border-t border-zinc-800/60">
+            <a href="{% url 'homepg' %}" class="text-sm text-blue-400 hover:underline font-medium transition-colors">
+                Skip to dashboard
+            </a>
         </div>
 
     </div>

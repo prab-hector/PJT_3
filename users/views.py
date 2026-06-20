@@ -5,6 +5,7 @@ from .models import AttendanceLog
 from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, StorageUpdateForm, ProfileUserUpdateForm
+from django.contrib.auth import logout as django_logout
 from datetime import datetime
 import calendar
 
@@ -74,6 +75,11 @@ def register(request):
 
 def login(request):
     return render(request, 'users/login.html')
+
+@login_required
+def logout(request):
+    django_logout(request)  # This terminates the active session
+    return redirect('homepg')  # This bounces them directly back to the dashboard
 
 @login_required
 def profile(request):
