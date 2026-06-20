@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 # Update your import line to pull all three necessary views
 from rfid_datacoming.views import process_rfid, check_buffer, register_user_submit
 from users import views as user_views
@@ -41,3 +43,6 @@ urlpatterns = [
     # 2. WEB USER DASHBOARD INTERFACES
     path('', include('users.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
