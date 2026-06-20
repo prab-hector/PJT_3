@@ -51,7 +51,6 @@ def process_rfid(request):
 
         if rfid_uid == ADD_MASTER:
             REGISTRATION_MODE_ACTIVE = True
-            # Clear old abandoned staging profiles to prevent row duplication conflicts
             Teammates.objects.filter(name="New Flagged Card User").delete()
             return JsonResponse({'status': 'success', 'message': 'Staging gate active.'}, status=200)
 
@@ -62,7 +61,6 @@ def process_rfid(request):
 
         try:
             teammate = Teammates.objects.get(rfid_number=rfid_uid)
-            # Prevent logging attendance for incomplete placeholder records
             if teammate.name == "New Flagged Card User":
                 return JsonResponse({'status': 'waiting', 'message': 'Profile registration form pending.'}, status=200)
                 
@@ -95,7 +93,12 @@ def register_user_submit(request):
         return JsonResponse({'status': 'error', 'message': 'Method Denied'}, status=400)
         
     try:
-        data = json.loads(request.body)
+        # Added flexible decoding to handle both JSON payloads and serialized form bodies seamlessly
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+        else:
+            data = request.POST
+
         rfid_uid = data.get('rfid_id', '').strip().upper()
         username = data.get('name', '').strip()
         branch_name = data.get('department', '').strip()
@@ -104,12 +107,12 @@ def register_user_submit(request):
         user_email = data.get('email', '').strip() or None
 
         if not username or not branch_name or not rfid_uid:
-            return JsonResponse({'status': 'error', 'message': 'Missing fields'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Required profile registration fields are empty'}, status=400)
             
         teammate = Teammates.objects.filter(rfid_number=rfid_uid, name="New Flagged Card User").first()
         
         if not teammate:
-            return JsonResponse({'status': 'error', 'message': 'No matching staging record found.'}, status=404)
+            return JsonResponse({'status': 'error', 'message': 'No staging slot active matching this card token.'}, status=404)
             
         teammate.name = username
         teammate.branch = branch_name
