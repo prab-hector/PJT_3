@@ -1,4 +1,5 @@
 import os
+import json
 import calendar
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -36,12 +37,26 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f"No records found for the period: {start_date} to {end_date}."))
             return
 
-        # 3. Establish Google Cloud Connection API Channel
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        creds_path = os.path.join(base_dir, 'google_creds.json')
+        # 3. Establish Google Cloud Connection API Channel Securely via Environment Variable
+        json_string = os.environ.get('GOOGLE_CREDS_JSON_STRING')
+        
+        if not json_string:
+            self.stdout.write(self.style.ERROR(
+                "Configuration Error: 'GOOGLE_CREDS_JSON_STRING' environment variable is missing!"
+            ))
+            return
+
+        try:
+            # Parse the single-line string securely back into a dictionary object
+            creds_dict = json.loads(json_string)
+        except json.JSONDecodeError as e:
+            self.stdout.write(self.style.ERROR(f"Failed to parse environment JSON string: {e}"))
+            return
         
         scopes = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scopes)
+        
+        # Authenticate using dictionary credentials directly instead of a file path
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scopes)
         client = gspread.authorize(creds)
 
         # 4. Access Master Workbook File 
@@ -82,11 +97,3 @@ class Command(BaseCommand):
         # 7. Local clean data space recovery optimization 
         count, _ = logs_to_export.delete()
         self.stdout.write(self.style.SUCCESS(f"Storage Optimization: Safely dropped {count} log rows from your live database file."))
-
-
-
-
-
-
-
-
