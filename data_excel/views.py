@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from oauth2client.service_account import ServiceAccountCredentials
 from storage.models import AttendanceLog,Teammates
-import pandas
+import pandas as pd
 
 def export_current_month_on_demand(request):
     if request.method == "POST":
