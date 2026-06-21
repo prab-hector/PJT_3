@@ -32,7 +32,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('reset_password/', auth_views.PasswordResetView.as_view(template_name='users/reset_password.html'), name='reset_password'),
     path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'), name='password_reset_confirm'),
-    path('generate-report/', data_views.generate_report, name='report'),
+    path('generate-report/', data_views.export_custom_date_view, name='report'),
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     
     # 2. WEB USER DASHBOARD INTERFACES

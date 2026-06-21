@@ -2,10 +2,11 @@ import os
 import json
 import calendar
 from django.core.management.base import BaseCommand
+from django.shortcuts import render, redirect
 from django.utils import timezone
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from storage.models import RFIDLog
+from storage.models import AttendanceLog
 
 class Command(BaseCommand):
     help = "Exports previous month's logs on the 1st day of a new month and clears local row space."
@@ -29,12 +30,12 @@ class Command(BaseCommand):
         end_date = target_date
 
         # 2. Gather records for the entire previous month (Optimized to prevent N+1 queries)
-        logs_to_export = RFIDLog.objects.filter(
+        logs_to_export = AttendanceLog.objects.filter(
             timestamp__date__range=[start_date, end_date]
         ).select_related('teammates') # Crucial performance patch
 
         if not logs_to_export.exists():
-            self.stdout.write(self.style.WARNING(f"No records found for the period: {start_date} to {end_date}."))
+            self.stdout.write(self.style.WARNING("No records found to export."))
             return
 
         # 3. Establish Google Cloud Connection API Channel Securely via Environment Variable

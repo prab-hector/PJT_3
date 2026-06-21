@@ -1,31 +1,27 @@
-import os
-import json
-import gspread
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils import timezone
-from oauth2client.service_account import ServiceAccountCredentials
-from django.contrib.admin.views.decorators import staff_member_required
-from storage.models import AttendanceLog, Teammates
 import pandas as pd
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from .services import get_attendance_data_for_date
 
 @staff_member_required
-def generate_report(request):
-    selected_date = request.GET.get('date') # Get date from your JS picker
-    # Query AttendanceLog matching the date
-    logs = AttendanceLog.objects.filter(timestamp__date=selected_date)
+def export_custom_date_view(request):
+    selected_date = request.GET.get('date')
+    
+    # Call the service
+    data = get_attendance_data_for_date(selected_date)
+    
+    # If no data, handle it
+    if not data:
+        return HttpResponse("No records found for this date.")
 
-    # Prepare data list with all requested fields
-    data = [{
-        'Name': log.teammates.name,
-        'Date': log.timestamp.date(),
-        'Time': log.timestamp.time(),
-        'Year': log.teammates.year,
-        'Domain': log.teammates.domain,
-        'Division': log.teammates.division,
-        'Phone': log.teammates.phone_number,
-        'Email': log.teammates.email
-    } for log in logs]
+    # Convert to DataFrame
+    df = pd.DataFrame(data)
 
-    # Send to a temporary sheet or display as a JSON response for the frontend
-    # ...
+    # Generate Excel response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="Attendance_{selected_date}.xlsx"'
+    
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+        
+    return response
