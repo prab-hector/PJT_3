@@ -254,7 +254,7 @@
             <div class="date-picker-wrapper">
                 <input type="date" id="attendance-date-picker">
             </div>
-            <a href="#" id="report-link" class="report-display-pane" style="text-decoration: none; display: block; color: white; cursor: pointer;">
+            <a href="#" id="report-link" class="report-display-pane" data-url="{% url 'report' %}" style="text-decoration: none; display: block; color: white; cursor: pointer;">
                 Sheets Report
             </a>
         </div>
@@ -303,11 +303,11 @@
             datePicker.min = firstDayOfMonth;
             datePicker.max = currentFormattedDay;
 
-            // Define Link Update Function
+            // UPDATED: Use data-url attribute to safely construct query
             function updateReportLink() {
                 const selectedDate = datePicker.value;
-                // Using URL tag for safety; replace with your actual URL name
-                reportLink.href = `{% url 'report' %}?date=${selectedDate}`;
+                const baseUrl = reportLink.getAttribute('data-url');
+                reportLink.href = `${baseUrl}?date=${selectedDate}`;
             }
 
             // Attach Event and Initialize
