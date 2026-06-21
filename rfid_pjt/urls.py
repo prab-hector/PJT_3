@@ -23,6 +23,7 @@ from django.contrib.auth import views as auth_views
 from data_excel import views as data_views
 from rfid_datacoming import views as rf_views
 
+
 urlpatterns = [
     # Django Administrative Panel Portal
     path('admin/', admin.site.urls),

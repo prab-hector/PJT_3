@@ -86,7 +86,7 @@ def edit_profile(request, pk): # 1. Accept pk as an argument
         'u_form': u_form,
         's_form': s_form
      }
-    return render(request, 'user/edit_profile.html', context)
+    return render(request, 'users/edit_profile.html', context)
 
 
 @login_required
