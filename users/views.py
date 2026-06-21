@@ -78,8 +78,8 @@ def profile(request):
      return render(request, 'user/profile.html',context)
 
 @login_required
-def edit_profile(request):
-    storage_instance = get_object_or_404(Teammates)
+def edit_profile(request, pk):
+    storage_instance = get_object_or_404(Teammates,  pk=pk)
 
     if request.method == 'POST':
         # Check if the user has a password; if not, block the update
