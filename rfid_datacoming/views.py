@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-from .models import Teammates, AttendanceLog
+from storage.models import Teammates, AttendanceLog
 from django.contrib.auth.models import User
 
 # Define your Master IDs here
