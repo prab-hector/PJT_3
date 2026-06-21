@@ -47,19 +47,19 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
-def set_password(request):
-    # 1. Identify the user by the primary key passed from the home page
-    user = get_object_or_404(User,)
+def set_password(request, pk): # 1. Accept pk as an argument
+    # 2. Use pk to fetch only the specific user
+    target_user = get_object_or_404(User, pk=pk) 
     
     if request.method == 'POST':
-        form = SetPasswordForm(user, request.POST) # Pass the user object here
+        form = SetPasswordForm(target_user, request.POST) 
         if form.is_valid():
-            form.save()
-            # 2. Now that they have a password, you can formally log them in
+            user = form.save()
             login(request, user)
-            return redirect('edit_profile')
+            # 3. Redirect using the specific user's pk
+            return redirect('edit_profile', pk=user.teammates.pk)
     else:
-        form = SetPasswordForm(user)
+        form = SetPasswordForm(target_user)
         
     return render(request, 'users/set_password.html', {'form': form})
 
