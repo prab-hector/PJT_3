@@ -307,7 +307,7 @@
             function updateReportLink() {
                 const selectedDate = datePicker.value;
                 // Using URL tag for safety; replace with your actual URL name
-                reportLink.href = `{% url 'generate_report_view_name' %}?date=${selectedDate}`;
+                reportLink.href = `{% url 'report' %}?date=${selectedDate}`;
             }
 
             // Attach Event and Initialize
