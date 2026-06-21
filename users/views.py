@@ -44,7 +44,7 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
-def set_password(request):
+def set_password(request, pk):
     if request.method == 'POST':
         form = SetPasswordForm(request.user, request.POST)
         if form.is_valid():
