@@ -50,6 +50,7 @@ def login(request):
 def set_password(request, pk):
     # 1. Fetch the user you want to set the password for
     target_user = get_object_or_404(User, pk=pk)
+    print(f"DEBUG: set_password called with id={pk}")
     
     if request.method == 'POST':
         # 2. Pass 'target_user' to the form, NOT 'request.user'
