@@ -8,7 +8,7 @@ class ProfileUserUpdateForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ['username']
+        fields = ['username','email']
 
 class StorageUpdateForm(forms.ModelForm):
     
@@ -28,4 +28,4 @@ class StorageUpdateForm(forms.ModelForm):
     class Meta:
         model = Teammates
         # This list ensures ONLY these 5 fields are rendered and processed
-        fields = ['email', 'division', 'domain', 'branch','phone_number','year']
+        fields = ['division', 'domain', 'branch','phone_number','year']
