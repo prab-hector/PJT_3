@@ -5,6 +5,8 @@ from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as django_logout
 from datetime import datetime
 import calendar
@@ -42,6 +44,17 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
+def set_password(request):
+    if request.method == 'POST':
+        form = SetPasswordForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            return redirect('homepg')
+    else:
+        form = SetPasswordForm(request.user)
+    return render(request, 'users/set_password.html', {'form': form})
+
 @login_required
 def logout(request):
     django_logout(request)  # This terminates the active session
@@ -57,32 +70,34 @@ def profile(request):
      return render(request, 'user/profile.html',context)
 
 @login_required
-def edit_profile(request, pk): # 1. Accept pk as an argument
-   # 2. Fetch the specific Teammate record by ID
+def edit_profile(request, pk):
     storage_instance = get_object_or_404(Teammates, pk=pk)
 
     if request.method == 'POST':
+        # Check if the user has a password; if not, block the update
+        if not request.user.has_usable_password():
+            messages.warning(request, "You must set a password before updating your profile.")
+            return redirect('set_password')
+
         u_form = ProfileUserUpdateForm(request.POST, instance=request.user)
         s_form = StorageUpdateForm(request.POST, instance=storage_instance)
-
+    
         if u_form.is_valid() and s_form.is_valid():
             u_form.save()
-
-            # 3. Finalize the state
             storage_item = s_form.save(commit=False)
-            storage_item.is_fully_registered = True # Mark as complete
+            storage_item.is_fully_registered = True 
             storage_item.save()
-
             messages.success(request, "Profile updated successfully!")
-            return redirect('homepg') # Redirect to your main dashboard
+            return redirect('profile')
     else:
-        u_form = ProfileUserUpdateForm(instance=storage_instance)
+        u_form = ProfileUserUpdateForm(instance=request.user)
         s_form = StorageUpdateForm(instance=storage_instance)
-
+    
     context = {
         'u_form': u_form,
-        's_form': s_form
-     }
+        's_form': s_form,
+        'user_has_password': request.user.has_usable_password()
+    }
     return render(request, 'users/edit_profile.html', context)
 
 
