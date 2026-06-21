@@ -7,6 +7,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - NLLRFID</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensures crispy forms inputs match the theme perfectly */
+        .form-group input, .form-group select, .form-group textarea {
+            background-color: #09090b !important; /* zinc-950 */
+            border: 1px solid #27272a !important; /* zinc-800 */
+            color: white !important;
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.75rem !important;
+            width: 100%;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb !important; /* blue-600 */
+            ring: 2px solid #2563eb;
+        }
+        label { color: #d4d4d8 !important; } /* zinc-300 */
+    </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen p-4 md:p-8">
 
@@ -21,14 +38,14 @@
             
             <div class="space-y-4">
                 <h5 class="text-blue-400 font-semibold uppercase tracking-wider text-sm">Account Credentials</h5>
-                <div class="text-zinc-300 [&>div>input]:bg-zinc-950 [&>div>input]:border-zinc-800 [&>div>input]:text-white [&>div>input]:rounded-xl [&>div>input]:px-4 [&>div>input]:py-3">
+                <div class="form-group">
                     {{ u_form|crispy }}
                 </div>
             </div>
             
             <div class="space-y-4">
                 <h5 class="text-blue-400 font-semibold uppercase tracking-wider text-sm mt-4">Storage House Details</h5>
-                <div class="text-zinc-300 [&>div>input]:bg-zinc-950 [&>div>input]:border-zinc-800 [&>div>input]:text-white [&>div>input]:rounded-xl [&>div>input]:px-4 [&>div>input]:py-3">
+                <div class="form-group">
                     {{ s_form|crispy }}
                 </div>
             </div>
