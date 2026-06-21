@@ -47,9 +47,9 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
-def set_password(request, pk):
+def set_password(request):
     # 1. Identify the user by the primary key passed from the home page
-    user = get_object_or_404(User, pk=pk)
+    user = get_object_or_404(User,)
     
     if request.method == 'POST':
         form = SetPasswordForm(user, request.POST) # Pass the user object here
@@ -57,7 +57,7 @@ def set_password(request, pk):
             form.save()
             # 2. Now that they have a password, you can formally log them in
             login(request, user)
-            return redirect('edit_profile', pk=user.teammates.pk)
+            return redirect('edit_profile')
     else:
         form = SetPasswordForm(user)
         
@@ -78,8 +78,8 @@ def profile(request):
      return render(request, 'user/profile.html',context)
 
 @login_required
-def edit_profile(request, pk):
-    storage_instance = get_object_or_404(Teammates, pk=pk)
+def edit_profile(request):
+    storage_instance = get_object_or_404(Teammates)
 
     if request.method == 'POST':
         # Check if the user has a password; if not, block the update
