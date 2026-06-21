@@ -50,7 +50,7 @@ def set_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            return redirect('homepg')
+            return redirect('edit_profile')
     else:
         form = SetPasswordForm(request.user)
     return render(request, 'users/set_password.html', {'form': form})
@@ -77,7 +77,7 @@ def edit_profile(request, pk):
         # Check if the user has a password; if not, block the update
         if not request.user.has_usable_password():
             messages.warning(request, "You must set a password before updating your profile.")
-            return redirect('set_password')
+            return redirect('homepg')
 
         u_form = ProfileUserUpdateForm(request.POST, instance=request.user)
         s_form = StorageUpdateForm(request.POST, instance=storage_instance)
