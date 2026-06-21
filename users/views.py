@@ -42,9 +42,6 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
-def login(request):
-    return render(request, 'users/login.html')
-
 @login_required
 def logout(request):
     django_logout(request)  # This terminates the active session
@@ -77,7 +74,7 @@ def edit_profile(request, pk): # 1. Accept pk as an argument
             storage_item.save()
 
             messages.success(request, "Profile updated successfully!")
-            return redirect('home_dashboard') # Redirect to your main dashboard
+            return redirect('homepg') # Redirect to your main dashboard
     else:
         u_form = ProfileUserUpdateForm(instance=storage_instance)
         s_form = StorageUpdateForm(instance=storage_instance)
