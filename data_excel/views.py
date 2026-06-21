@@ -5,7 +5,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
 from oauth2client.service_account import ServiceAccountCredentials
-from storage.models import AttendanceLog
+from storage.models import AttendanceLog,Teammates
+import pandas
 
 def export_current_month_on_demand(request):
     if request.method == "POST":
@@ -86,3 +87,19 @@ def export_current_month_on_demand(request):
 
     # If GET request, just render the simple input form page
     return render(request, "storage/export_form.html")
+
+def generate_report(request):
+    selected_date = request.GET.get('date')
+    # Retrieve attendance and follow the relationship to the Teammate class
+    records = Teammates.objects.filter(timestamp__date=selected_date)
+
+    data = [{
+        'Name': r.teammate.name,
+        'Branch': r.teammate.branch,
+        'Year': r.teammate.year,
+        'Domain': r.teammate.domain,
+        'Division': r.teammate.division,
+        'Time': r.timestamp.strftime('%H:%M:%S')
+    } for r in records]
+
+    df = pd.DataFrame(data)

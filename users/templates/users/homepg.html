@@ -175,6 +175,7 @@
             color: #ffffff;
             font-weight: 500;
             box-sizing: border-box;
+            text-align: center;
         }
 
         /* DATA MONITOR FRAME BUFFER */
@@ -253,9 +254,9 @@
             <div class="date-picker-wrapper">
                 <input type="date" id="attendance-date-picker">
             </div>
-            <div class="report-display-pane">
+            <a href="#" id="report-link" class="report-display-pane" style="text-decoration: none; display: block; color: white; cursor: pointer;">
                 Sheets Report
-            </div>
+            </a>
         </div>
 
         {% if incomplete_profiles %}
@@ -282,12 +283,12 @@
             <div class="status-title">Awaiting Orbital Stream Transmissions</div>
             <div class="status-subtitle">System buffer listening for real-time validation data packages from local ESP32 gateway microcontrollers...</div>
         </main>
-
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const datePicker = document.getElementById("attendance-date-picker");
+            const reportLink = document.getElementById("report-link");
             const today = new Date();
             
             const year = today.getFullYear();
@@ -297,9 +298,21 @@
             const currentFormattedDay = `${year}-${month}-${day}`;
             const firstDayOfMonth = `${year}-${month}-01`;
             
+            // Initialize Date Picker
             datePicker.value = currentFormattedDay;
             datePicker.min = firstDayOfMonth;
             datePicker.max = currentFormattedDay;
+
+            // Define Link Update Function
+            function updateReportLink() {
+                const selectedDate = datePicker.value;
+                // Using URL tag for safety; replace with your actual URL name
+                reportLink.href = `{% url 'generate_report_view_name' %}?date=${selectedDate}`;
+            }
+
+            // Attach Event and Initialize
+            datePicker.addEventListener("change", updateReportLink);
+            updateReportLink(); // Set initial link on page load
         });
     </script>
 </body>

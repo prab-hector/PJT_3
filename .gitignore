@@ -4,3 +4,4 @@ db.sqlite3
 *.pyc
 media/
 google_creds.json
+.venv
