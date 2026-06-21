@@ -61,7 +61,7 @@ def set_password(request, pk):
     else:
         form = SetPasswordForm(user)
         
-    return render(request, 'users/set_password.html', {'form': form}
+    return render(request, 'users/set_password.html', {'form': form})
 
 @login_required
 def logout(request):
