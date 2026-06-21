@@ -11,12 +11,12 @@ def get_attendance_for_date(target_date):
         {
             "Name": log.teammates.name,
             "Date": log.timestamp.date(),
-            "Time": log.timestamp.time(),
+            "timestamp": log.timestamp.time(),
             "Domain": log.teammates.domain,
-            "Division": log.teammates.division,
+            "branch": log.teammates.branch,
             "Phone": log.teammates.phone_number,
             "Email": log.teammates.email,
         }
         for log in logs
     ]
-    return data
+    return data           

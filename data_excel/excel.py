@@ -75,10 +75,10 @@ class Command(BaseCommand):
         try:
             worksheet = sheet.worksheet(worksheet_title)
             worksheet.clear()
-            worksheet.append_row(["Student Name", "Branch", "RFID UID", "Scan Timestamp"])
+            worksheet.append_row([ "Name","date","Domain","timestamp","phone_number","Email"])
         except gspread.WorksheetNotFound:
             worksheet = sheet.add_worksheet(title=worksheet_title, rows="1500", cols="4")
-            worksheet.append_row(["Student Name", "Branch", "RFID UID", "Scan Timestamp"])
+            worksheet.append_row(["Name","date","Domain","timestamp","phone_number","Email"])
 
         # 6. Matrix compilation
         rows_to_append = []

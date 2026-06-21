@@ -1,14 +1,14 @@
 import pandas as pd
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
-from .services import get_attendance_data_for_date
+from .services import get_attendance_for_date
 
 @staff_member_required
 def export_custom_date_view(request):
     selected_date = request.GET.get('date')
     
     # Call the service
-    data = get_attendance_data_for_date(selected_date)
+    data = get_attendance_for_date(selected_date)
     
     # If no data, handle it
     if not data:

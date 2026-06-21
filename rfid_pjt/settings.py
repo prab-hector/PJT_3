@@ -134,9 +134,6 @@ from pathlib import Path
 
 # Initialize environ reader variables
 
-import os
-from pathlib import Path
-
 # 1. Base Directory Definition (Only define this once at the very top of your file)
 # BASE_DIR = Path(__file__).resolve().parent.parent
 
