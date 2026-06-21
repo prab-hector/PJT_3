@@ -5,6 +5,7 @@ from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
+from django.contrib.auth import login, User
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as django_logout
@@ -44,15 +45,29 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
+from django.contrib.auth import login
+from django.contrib.auth.forms import SetPasswordForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
+
 def set_password(request, pk):
+    # 1. Fetch the user you want to set the password for
+    target_user = get_object_or_404(User, pk=pk)
+    
     if request.method == 'POST':
-        form = SetPasswordForm(request.user, request.POST)
+        # 2. Pass 'target_user' to the form, NOT 'request.user'
+        form = SetPasswordForm(target_user, request.POST)
         if form.is_valid():
+            # 3. Save the password for the target_user
             user = form.save()
-            update_session_auth_hash(request, user)
-            return redirect('edit_profile')
+            # 4. Log the user in so they have a session
+            login(request, user)
+            # 5. Redirect to edit_profile using the target_user's teammate record
+            return redirect('edit_profile', pk=user.teammates.pk)
     else:
-        form = SetPasswordForm(request.user)
+        # Pass 'target_user' here as well
+        form = SetPasswordForm(target_user)
+        
     return render(request, 'users/set_password.html', {'form': form})
 
 @login_required
