@@ -11,7 +11,7 @@ class Teammates(models.Model):
     email = models.EmailField(max_length=254, null=True, blank=True)
     phone_number = models.CharField(max_length=10)
     year = models.CharField(max_length=30)
-    rfid_number = models.CharField(max_length=8, unique=True) # Unique enforces clean database records
+    rfid_number = models.CharField(max_length=8, unique=True, db_index=True) # Unique enforces clean database records
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     
@@ -29,12 +29,19 @@ class AttendanceLog(models.Model):
     """
     # Links directly to our teammate if known, or leaves blank if an unknown scan happens
     teammate = models.ForeignKey(Teammates, on_delete=models.CASCADE, null=True, blank=True)
-    rfid_scanned = models.CharField(max_length=8)
+    rfid_number = models.CharField(max_length=8)
     timestamp = models.DateTimeField(auto_now_add=True)
     
     # Stores outcomes like: "Present", "System Mode: Add Users", "Access Denied"
     status = models.CharField(max_length=50, default="Present")
 
     def __str__(self):
-        name = self.teammate.name if self.teammate else f"Unknown ({self.rfid_scanned})"
+        name = self.teammate.name if self.teammate else f"Unknown ({self.rfid_number})"
         return f"{name} - {self.status} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+    
+
+class unregistered_log(models.Model):
+    rfid_number = models.CharField(max_length=8)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+

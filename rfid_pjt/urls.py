@@ -20,16 +20,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from rfid_datacoming.views import process_rfid, check_buffer, register_user_submit
+
 
 urlpatterns = [
     # Django Administrative Panel Portal
     path('admin/', admin.site.urls),
-
-    # 1. HARDWARE GATEWAY ENDPOINTS
-    path('api/rfid/process/', process_rfid, name='api-rfid-process'),
-    path('api/rfid/check-buffer/', check_buffer, name='api-rfid-check-buffer'),
-    path('api/rfid/register-submit/', register_user_submit, name='api-rfid-register-submit'),
 
     # Authentication pathways
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),

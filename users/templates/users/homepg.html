@@ -92,7 +92,7 @@
             color: #ffffff;
             cursor: pointer;
             padding: 4px;
-            text-decoration: none; /* Reset link underline default styling */
+            text-decoration: none; 
         }
         .avatar-circle {
             width: 36px;
@@ -212,7 +212,6 @@
     <div class="dashboard-container">
 
         <header class="navbar-header-row">
-            
             <div class="app-logo-block">
                 <div class="logo-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -235,9 +234,9 @@
                 </div>
                 
                 <a href="{% url 'login' %}" class="profile-trigger-btn">
-                    <div class="avatar-circle">P</div>
+                    <div class="avatar-circle">{{ admin_initials }}</div>
                     <div class="profile-meta-text">
-                        <span class="user-name">Profile Button</span>
+                        <span class="user-name">{{ admin_name }}</span>
                         <span class="user-role">root user</span>
                     </div>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;">
@@ -245,24 +244,33 @@
                     </svg>
                 </a>
             </div>
-
         </header>
 
         <div class="controls-row">
-            
             <div class="search-filter-wrapper">
                 <input type="text" placeholder="Filter node search parameters..." autocomplete="off">
             </div>
-
             <div class="date-picker-wrapper">
                 <input type="date" id="attendance-date-picker">
             </div>
-
             <div class="report-display-pane">
                 Sheets Report
             </div>
-
         </div>
+
+        {% if incomplete_profiles %}
+        <div style="background-color: #090a0f; border: 1px solid #2563eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin-top: 0; color: #fbbf24; font-size: 16px;">Action Required: New Cards Detected</h3>
+            {% for profile in incomplete_profiles %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1f242e;">
+                    <span style="font-size: 14px;">Unregistered UID: {{ profile.rfid_number }}</span>
+                    <a href="{% url 'edit_profile' profile.pk %}" style="background: #2563eb; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                        Complete Profile
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         <main class="status-container">
             <div class="status-icon">
@@ -286,11 +294,9 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             
-            // Generate standard ISO formatted string representations
             const currentFormattedDay = `${year}-${month}-${day}`;
             const firstDayOfMonth = `${year}-${month}-01`;
             
-            // Apply maximum and minimum constraints to block previous and future months
             datePicker.value = currentFormattedDay;
             datePicker.min = firstDayOfMonth;
             datePicker.max = currentFormattedDay;
