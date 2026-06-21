@@ -5,12 +5,14 @@ from storage.models import Teammates
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
-from django.contrib.auth import login, User
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as django_logout
 from datetime import datetime
 import calendar
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
@@ -44,11 +46,6 @@ def login(request):
     Authentication View: Renders user portal entry page template layout context.
     """
     return render(request, 'users/login.html')
-
-from django.contrib.auth import login
-from django.contrib.auth.forms import SetPasswordForm
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
 
 def set_password(request, pk):
     # 1. Fetch the user you want to set the password for
