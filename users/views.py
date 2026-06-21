@@ -47,23 +47,23 @@ def login(request):
     """
     return render(request, 'users/login.html')
 
+from django.contrib.auth import login
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import SetPasswordForm
+
 def set_password(request, pk):
-    # 1. Fetch the user you want to set the password for
     target_user = get_object_or_404(User, pk=pk)
-    print(f"DEBUG: set_password called with id={pk}")
     
     if request.method == 'POST':
-        # 2. Pass 'target_user' to the form, NOT 'request.user'
+        # Use the standard form, but ensure the user is passed correctly
         form = SetPasswordForm(target_user, request.POST)
         if form.is_valid():
-            # 3. Save the password for the target_user
             user = form.save()
-            # 4. Log the user in so they have a session
+            # Explicitly log them in after the password is set
             login(request, user)
-            # 5. Redirect to edit_profile using the target_user's teammate record
             return redirect('edit_profile', pk=user.teammates.pk)
     else:
-        # Pass 'target_user' here as well
         form = SetPasswordForm(target_user)
         
     return render(request, 'users/set_password.html', {'form': form})
