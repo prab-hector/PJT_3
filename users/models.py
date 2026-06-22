@@ -10,9 +10,11 @@ class Teammates(models.Model):
     branch = models.CharField(max_length=30)
     email = models.EmailField(max_length=254, null=True, blank=True)
     phone_number = models.CharField(max_length=10)
+    division = models.CharField(max_length=30, null=True, blank=True)
     domain = models.CharField(max_length=10)
     rfid_number = models.CharField(max_length=8, unique=True, db_index=True)
     year = models.CharField(max_length=30)
+    about = models.TextField(blank=True)
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.OneToOneField(User, on_delete=models.CASCADE)
     
