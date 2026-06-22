@@ -81,7 +81,7 @@ def profile(request):
 
 @login_required
 def edit_profile(request, pk):
-    storage_instance = get_object_or_404(Teammates,  pk=pk)
+    storage_instance = get_object_or_404(Teammates, author__pk=pk)
 
     if request.method == 'POST':
         # Check if the user has a password; if not, block the update
