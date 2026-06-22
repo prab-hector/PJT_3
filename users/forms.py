@@ -12,7 +12,6 @@ class ProfileUserUpdateForm(forms.ModelForm):
 
 class StorageUpdateForm(forms.ModelForm):
     
-    division = forms.CharField(required=True)
     domain = forms.CharField(required=True)
     branch = forms.CharField(required=True)
     phone_number = forms.CharField(
@@ -25,7 +24,8 @@ class StorageUpdateForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'placeholder': 'Enter 10-digit number'})
     )
     year = forms.CharField(required=False, max_length=30)
+
     class Meta:
         model = Teammates
-        # This list ensures ONLY these 5 fields are rendered and processed
-        fields = ['division', 'domain', 'branch','phone_number','year']
+        # This list ensures only valid teammate fields are rendered and processed
+        fields = ['domain', 'branch', 'phone_number', 'year']

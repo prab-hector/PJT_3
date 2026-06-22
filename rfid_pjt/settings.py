@@ -40,9 +40,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'users',
-    'rfid_datacoming',
     'rest_framework',
-    'data_excel'
+    'data_flow',
 ]
 
 MIDDLEWARE = [

@@ -2,14 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import AttendanceLog, Teammates
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import views
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as django_logout
-from datetime import datetime
 import calendar
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.models import User
 
@@ -80,7 +77,10 @@ def profile(request):
 
 @login_required
 def edit_profile(request, pk):
-    storage_instance = get_object_or_404(Teammates, author__pk=pk)
+    if request.user.pk != pk:
+        return redirect('homepg')
+
+    storage_instance = get_object_or_404(Teammates, author=request.user)
 
     if request.method == 'POST':
         # Check if the user has a password; if not, block the update
@@ -109,8 +109,3 @@ def edit_profile(request, pk):
         'user_has_password': request.user.has_usable_password()
     }
     return render(request, 'users/edit_profile.html', context)
-
-
-@login_required
-def reset_password(request):
-    return redirect('password_reset')

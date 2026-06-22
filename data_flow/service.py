@@ -4,18 +4,18 @@ import pandas as pd
 
 def get_attendance_for_date(target_date):
     # 1. Query the database
-    logs = AttendanceLog.objects.filter(timestamp__date=target_date).select_related('teammates')
+    logs = AttendanceLog.objects.filter(timestamp__date=target_date).select_related('teammate')
 
     # 2. Process data into a list of dictionaries (or a DataFrame)
     data = [
         {
-            "Name": log.teammates.name,
+            "Name": log.teammate.name,
             "Date": log.timestamp.date(),
             "timestamp": log.timestamp.time(),
-            "Domain": log.teammates.domain,
-            "branch": log.teammates.branch,
-            "Phone": log.teammates.phone_number,
-            "Email": log.teammates.email,
+            "Domain": log.teammate.domain,
+            "branch": log.teammate.branch,
+            "Phone": log.teammate.phone_number,
+            "Email": log.teammate.email,
         }
         for log in logs
     ]
