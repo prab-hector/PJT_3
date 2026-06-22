@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
 from .models import AttendanceLog, Teammates
 from django.contrib.auth.decorators import login_required
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
@@ -15,9 +16,10 @@ from django.contrib.auth.models import User
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
 
 def home_dashboard(request):
-    # 1. Fetch all attendance logs from the first recorded to the latest
-    # Note: this returns all records; consider paginating if the table grows large.
-    recent_scans = AttendanceLog.objects.select_related('teammate').order_by('timestamp')
+    # 1. Fetch today's attendance and older history separately
+    today = timezone.localdate()
+    today_scans = AttendanceLog.objects.select_related('teammate').filter(timestamp__date=today).order_by('timestamp')
+    history_scans = AttendanceLog.objects.select_related('teammate').exclude(timestamp__date=today).order_by('-timestamp')
     
     # 2. Fetch incomplete profiles (Auto-created by process_rfid)
     incomplete_profiles = Teammates.objects.filter(is_fully_registered=False).order_by('-date_posted')
@@ -30,10 +32,12 @@ def home_dashboard(request):
     admin_initials = "".join([n[0] for n in admin_name.split() if n])[:2].upper()
 
     context = {
-        'recent_scans': recent_scans,
+        'today_scans': today_scans,
+        'history_scans': history_scans,
         'incomplete_profiles': incomplete_profiles, # New data for your template
         'admin_name': admin_name,
         'admin_initials': admin_initials,
+        'user': request.user,
     }
     
     # Fixed typo: 'contex' -> 'context'

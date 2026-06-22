@@ -11,7 +11,7 @@ class ProfileUserUpdateForm(forms.ModelForm):
         fields = ['username','email']
 
 class StorageUpdateForm(forms.ModelForm):
-    
+    name = forms.CharField(required=True, max_length=30)
     domain = forms.CharField(required=True)
     branch = forms.CharField(required=True)
     division = forms.CharField(required=False, max_length=30)
@@ -30,4 +30,4 @@ class StorageUpdateForm(forms.ModelForm):
     class Meta:
         model = Teammates
         # This list ensures only valid teammate fields are rendered and processed
-        fields = ['domain', 'branch', 'phone_number', 'year', 'division', 'about']
+        fields = ['name', 'domain', 'branch', 'phone_number', 'year', 'division', 'about']

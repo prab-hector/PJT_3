@@ -6,6 +6,7 @@ from .service import get_attendance_for_date
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
+from django.utils import timezone
 from users.models import Teammates, AttendanceLog
 from django.contrib.auth.models import User
 
@@ -65,7 +66,19 @@ def process_rfid(request):
         teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
         
         if teammate:
-            # Mark attendance
+            today = timezone.localdate()
+            same_day_log_exists = AttendanceLog.objects.filter(
+                teammate=teammate,
+                timestamp__date=today
+            ).exists()
+
+            if same_day_log_exists:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Attendance already marked for today',
+                    'already_marked': True
+                }, status=200)
+
             AttendanceLog.objects.create(teammate=teammate, status="Present")
             return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
 
