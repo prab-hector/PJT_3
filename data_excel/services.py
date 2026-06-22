@@ -1,5 +1,5 @@
 # data_excel/services.py
-from storage.models import AttendanceLog # Adjust import based on your actual storage model
+from users.models import AttendanceLog # Adjust import based on your actual storage model
 import pandas as pd
 
 def get_attendance_for_date(target_date):

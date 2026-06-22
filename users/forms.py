@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
-from storage.models import Teammates
+from users.models import Teammates
 class ProfileUserUpdateForm(forms.ModelForm):
     email = forms.EmailField(required=True)
     
