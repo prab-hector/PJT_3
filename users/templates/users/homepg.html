@@ -273,8 +273,7 @@
         <section class="attendance-section">
             <div class="attendance-header">
                 <h4>Today's Attendance</h4>
-                <span class="muted">Showing today's attendance only</span>
-            </div>
+                </div>
             <div class="attendance-grid">
                 {% for log in today_scans %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
@@ -298,8 +297,7 @@
         {% if history_scans %}
         <section class="attendance-section">
             <div class="attendance-header">
-                <h4>Attendance History</h4>
-                <span class="muted">All previous attendance logs before today</span>
+                <h4>Today's Attendance </h4>
             </div>
             <div class="attendance-grid">
                 {% for log in history_scans %}
@@ -329,7 +327,7 @@
                 </svg>
             </div>
             <div class="status-title">Awaiting Orbital Stream Transmissions</div>
-            <div class="status-subtitle">System buffer listening for real-time validation data packages from local ESP32 gateway microcontrollers...</div>
+            <div class="status-subtitle">Waiting for data from local ESP32 ground station KJSIT/NLI</div>
         </main>
     </div>
 
