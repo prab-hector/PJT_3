@@ -66,7 +66,6 @@ def logout(request):
     django_logout(request)  # This terminates the active session
     return redirect('homepg')  # This bounces them directly back to the dashboard
 
-@login_required
 def profile(request):
      user_storage_records = Teammates.objects.filter(author = request.user)
 

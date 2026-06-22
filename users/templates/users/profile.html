@@ -72,11 +72,13 @@
             <section class="lg:col-span-4">
                 <div class="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-6 shadow-2xl backdrop-blur-md sticky top-24 text-center">
                     <div class="flex justify-center mb-4 relative group">
-                        {% comment %} {% if records.first.image %}
-                            <img src="{{ records.first.image.url }}" class="rounded-full border-2 border-blue-500/50 p-1 shadow-xl object-cover w-[110px] h-[110px]" alt="{{ user.username }}">
-                        {% comment %} {% else %} {% endcomment %}
-                            {% comment %} <img src="/media/profile_pics/default.png" class="rounded-full border-2 border-blue-500/50 p-1 shadow-xl object-cover w-[110px] h-[110px]" alt="Default Avatar"> {% endcomment %} {% endcomment %}
-                        {% endif %}
+                        {% comment %}
+                            {% if records.first.image %}
+                                <img src="{{ records.first.image.url }}" class="rounded-full border-2 border-blue-500/50 p-1 shadow-xl object-cover w-[110px] h-[110px]" alt="{{ user.username }}">
+                            {% else %}
+                                <img src="/media/profile_pics/default.png" class="rounded-full border-2 border-blue-500/50 p-1 shadow-xl object-cover w-[110px] h-[110px]" alt="Default Avatar">
+                            {% endif %}
+                        {% endcomment %}
                         <span class="absolute bottom-1 right-[calc(50%-50px)] w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full animate-ping"></span>
                         <span class="absolute bottom-1 right-[calc(50%-50px)] w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full"></span>
                     </div>
