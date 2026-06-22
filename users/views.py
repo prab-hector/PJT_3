@@ -77,7 +77,7 @@ def profile(request):
      context = {
           'records': user_storage_records
      }
-     return render(request, 'user/profile.html',context)
+     return render(request, 'users/profile.html',context)
 
 @login_required
 def edit_profile(request, pk):
