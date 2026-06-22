@@ -56,7 +56,7 @@ def set_password(request, pk): # 1. Accept pk as an argument
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            login(request, user,)
             # 3. Redirect using the specific user's pk
             return redirect('edit_profile', pk=user.pk)
     else:
@@ -105,6 +105,7 @@ def edit_profile(request, pk):
     context = {
         'u_form': u_form,
         's_form': s_form,
+        'my_storage': storage_instance,
         'user_has_password': request.user.has_usable_password()
     }
     return render(request, 'users/edit_profile.html', context)
