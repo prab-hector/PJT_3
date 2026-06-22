@@ -15,8 +15,9 @@ from django.contrib.auth.models import User
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
 
 def home_dashboard(request):
-    # 1. Fetch recent logs
-    recent_scans = AttendanceLog.objects.select_related('teammate').order_by('-timestamp')[:10]
+    # 1. Fetch all attendance logs from the first recorded to the latest
+    # Note: this returns all records; consider paginating if the table grows large.
+    recent_scans = AttendanceLog.objects.select_related('teammate').order_by('timestamp')
     
     # 2. Fetch incomplete profiles (Auto-created by process_rfid)
     incomplete_profiles = Teammates.objects.filter(is_fully_registered=False).order_by('-date_posted')
