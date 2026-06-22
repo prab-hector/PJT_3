@@ -30,7 +30,10 @@ urlpatterns = [
     # Authentication pathways
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html', redirect_authenticated_user=True), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
-    path('reset_password/', auth_views.PasswordResetView.as_view(template_name='users/reset_password.html'), name='reset_password'),
+    path('reset_password/', auth_views.PasswordResetView.as_view(template_name='users/reset_password.html', email_template_name='registration/password_reset_email.html', subject_template_name='registration/password_reset_subject.txt'), name='reset_password'),
+    path('reset_password/done/', auth_views.PasswordResetDoneView.as_view(template_name='users/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='users/password_reset_complete.html'), name='password_reset_complete'),
     path('api-attendancelog/', rf_views.process_rfid, name='process_rfid'),
     path('generate-report/', rf_views.export_custom_date_view, name='report'),
         

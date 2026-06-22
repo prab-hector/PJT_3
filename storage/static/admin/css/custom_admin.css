@@ -1,15 +1,17 @@
 /* ============================================
    Django Admin Custom Dark Theme
-   Matches the main application dark theme
+   Matches the main application dark theme (Tailwind + Zinc)
    ============================================ */
 
 :root {
-    --primary-bg: #090a0f;
-    --secondary-bg: #0f1318;
-    --border-color: #1f2937;
-    --text-primary: #ffffff;
-    --text-secondary: #cbd5e1;
-    --accent-blue: #3b82f6;
+    --primary-bg: #000000;
+    --secondary-bg: #18181b;
+    --tertiary-bg: #27272a;
+    --border-color: #3f3f46;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1a1;
+    --accent-blue: #2563eb;
+    --accent-blue-hover: #1d4ed8;
     --accent-green: #10b981;
     --accent-yellow: #fbbf24;
     --success: #10b981;
@@ -17,8 +19,12 @@
     --warning: #f59e0b;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 /* Global Styling */
-body {
+html, body {
     background-color: var(--primary-bg) !important;
     color: var(--text-primary) !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;

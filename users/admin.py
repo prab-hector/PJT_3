@@ -26,15 +26,20 @@ class TeammatesAdmin(admin.ModelAdmin):
 
 
 class AttendanceLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'teammate_name', 'timestamp', 'status')
+    list_display = ('id', 'teammate_name', 'timestamp_display', 'status')
     list_filter = ('status', 'timestamp', 'teammate__branch')
     search_fields = ('teammate__name', 'teammate__rfid_number')
     readonly_fields = ('timestamp',)
     actions = ['export_to_excel']
+    change_list_template = 'admin/users/attendancelog_change_list.html'
     
     def teammate_name(self, obj):
         return obj.teammate.name if obj.teammate else "Unknown"
     teammate_name.short_description = "Teammate"
+    
+    def timestamp_display(self, obj):
+        return obj.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    timestamp_display.short_description = "Scanned At"
     
     def export_to_excel(self, request, queryset):
         """Custom action to export selected attendance logs to Excel."""
