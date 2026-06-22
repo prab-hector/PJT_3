@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from users.models import AttendanceLog, Teammates
+from .models import AttendanceLog, Teammates
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views
 from .forms import StorageUpdateForm, ProfileUserUpdateForm
