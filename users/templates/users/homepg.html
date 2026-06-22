@@ -254,38 +254,27 @@
             <div class="date-picker-wrapper">
                 <input type="date" id="attendance-date-picker">
             </div>
-            {% if user.is_staff %}
-            <a href="#" id="report-link" class="report-display-pane" data-url="{% url 'report' %}" style="text-decoration: none; display: block; color: white; cursor: pointer;" target="_blank">
-                Sheets Report
-            </a>
-            {% else %}
-            <div class="report-display-pane" title="Staff only" style="opacity:0.9; cursor:default;">
-                Sheets Report (staff only)
-            </div>
-            {% endif %}
         </div>
 
         {% if incomplete_profiles %}
-        <div style="background-color: #090a0f; border: 1px solid #2563eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <h3 style="margin-top: 0; color: #fbbf24; font-size: 16px;">Action Required: New Cards Detected</h3>
+        <div class="incomplete-profiles">
+            <h3>Action Required: New Cards Detected</h3>
             {% for profile in incomplete_profiles %}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1f242e;">
-                    <span style="font-size: 14px;">Unregistered UID: {{ profile.rfid_number }}</span>
-                    <a href="{% url 'set_password' pk=profile.author.pk%}" style="background: #2563eb; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
-                        Complete Profile
-                    </a>
+                <div class="incomplete-item">
+                    <span>Unregistered UID: {{ profile.rfid_number }}</span>
+                    <a href="{% url 'set_password' pk=profile.author.pk%}" class="btn-primary">Complete Profile</a>
                 </div>
             {% endfor %}
         </div>
         {% endif %}
 
         {% if today_scans %}
-        <section style="background-color: #090a0f; border: 1px solid #161b27; border-radius: 20px; padding: 24px; margin-bottom: 24px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,0.25);">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom: 16px;">
-                <h4 style="margin:0; color:#93c5fd; font-size:1.1rem; letter-spacing:0.02em;">Today's Attendance</h4>
-                <span style="font-size:0.9rem; color:#94a3b8;">Showing today's attendance only</span>
+        <section class="attendance-section">
+            <div class="attendance-header">
+                <h4>Today's Attendance</h4>
+                <span class="muted">Showing today's attendance only</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;">
+            <div class="attendance-grid">
                 {% for log in today_scans %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>
@@ -306,12 +295,12 @@
         {% endif %}
 
         {% if history_scans %}
-        <section style="background-color: #090a0f; border: 1px solid #161b27; border-radius: 20px; padding: 24px; margin-bottom: 24px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,0.25);">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom: 16px;">
-                <h4 style="margin:0; color:#93c5fd; font-size:1.1rem; letter-spacing:0.02em;">Attendance History</h4>
-                <span style="font-size:0.9rem; color:#94a3b8;">All previous attendance logs before today</span>
+        <section class="attendance-section">
+            <div class="attendance-header">
+                <h4>Attendance History</h4>
+                <span class="muted">All previous attendance logs before today</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;">
+            <div class="attendance-grid">
                 {% for log in history_scans %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>

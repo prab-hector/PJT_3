@@ -149,3 +149,7 @@ STATIC_ROOT = BASE_DIR / 'static_deployed'
 # 3. Media Files (User Uploads) Configuration
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+ 
+# Redirects after login/logout
+LOGIN_REDIRECT_URL = '/profile/'
+LOGOUT_REDIRECT_URL = '/'
