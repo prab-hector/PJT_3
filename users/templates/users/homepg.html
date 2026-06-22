@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-color: #050505;
@@ -165,19 +166,6 @@
             cursor: pointer;
         }
 
-        .report-display-pane {
-            width: 320px;
-            background-color: #0f1115;
-            border: 1px solid #1f242e;
-            border-radius: 8px;
-            padding: 14px 16px;
-            font-size: 14px;
-            color: #ffffff;
-            font-weight: 500;
-            box-sizing: border-box;
-            text-align: center;
-        }
-
         /* DATA MONITOR FRAME BUFFER */
         .status-container {
             background-color: #090a0f;
@@ -206,26 +194,18 @@
             max-width: 440px;
             line-height: 1.5;
         }
-            <script src="https://cdn.tailwindcss.com"></script>
-            /* Ambient star background layer styles */
+
+        /* Ambient star background layer styles */
         .star {
             position: absolute;
             background-color: white;
             border-radius: 50%;
             animation: pulse 3.5s infinite ease-in-out;
+            pointer-events: none;
         }
         @keyframes pulse {
             0%, 100% { opacity: 0.15; transform: scale(0.8); }
             50% { opacity: 0.8; transform: scale(1.2); }
-        }
-        /* Slow cosmic drifting movement for the tracking satellite */
-        @keyframes satelliteDrift {
-            0% { transform: translate(-10%, 15vh) rotate(0deg); }
-            50% { transform: translate(110vw, 45vh) rotate(180deg); }
-            100% { transform: translate(-10%, 75vh) rotate(360deg); }
-        }
-        .orbiting-satellite {
-            animation: satelliteDrift 45s infinite linear;
         }
     </style>
 </head>
@@ -354,33 +334,38 @@
     </div>
 
     <script>
+        // Star Background Generator
         document.addEventListener("DOMContentLoaded", function() {
+            const starContainer = document.createElement('div');
+            starContainer.style.position = 'fixed';
+            starContainer.style.top = '0';
+            starContainer.style.left = '0';
+            starContainer.style.width = '100%';
+            starContainer.style.height = '100%';
+            starContainer.style.zIndex = '-1';
+            starContainer.style.overflow = 'hidden';
+            document.body.prepend(starContainer);
+
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3.5 + 's';
+                starContainer.appendChild(star);
+            }
+
+            // Date Picker Logic
             const datePicker = document.getElementById("attendance-date-picker");
-            const reportLink = document.getElementById("report-link");
             const today = new Date();
-            
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             
-            const currentFormattedDay = `${year}-${month}-${day}`;
-            const firstDayOfMonth = `${year}-${month}-01`;
-            
-            // Initialize Date Picker
-            datePicker.value = currentFormattedDay;
-            datePicker.min = firstDayOfMonth;
-            datePicker.max = currentFormattedDay;
-
-            // UPDATED: Use data-url attribute to safely construct query
-            function updateReportLink() {
-                const selectedDate = datePicker.value;
-                const baseUrl = reportLink.getAttribute('data-url');
-                reportLink.href = `${baseUrl}?date=${selectedDate}`;
-            }
-
-            // Attach Event and Initialize
-            datePicker.addEventListener("change", updateReportLink);
-            updateReportLink(); // Set initial link on page load
+            datePicker.value = `${year}-${month}-${day}`;
+            datePicker.max = `${year}-${month}-${day}`;
         });
     </script>
 </body>
