@@ -10,7 +10,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as django_logout
 from datetime import datetime
 import calendar
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.models import User
 
 
@@ -55,9 +55,10 @@ def set_password(request, pk): # 1. Accept pk as an argument
         form = SetPasswordForm(target_user, request.POST) 
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            update_session_auth_hash(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             # 3. Redirect using the specific user's pk
-            return redirect('edit_profile', pk=user.teammates.pk)
+            return redirect('edit_profile', pk=user.pk)
     else:
         form = SetPasswordForm(target_user)
         
