@@ -56,7 +56,7 @@ def set_password(request, pk): # 1. Accept pk as an argument
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            login(request, user,)
+            login(request, user)
             # 3. Redirect using the specific user's pk
             return redirect('edit_profile', pk=user.pk)
     else:
