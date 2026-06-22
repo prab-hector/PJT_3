@@ -206,6 +206,27 @@
             max-width: 440px;
             line-height: 1.5;
         }
+            <script src="https://cdn.tailwindcss.com"></script>
+            /* Ambient star background layer styles */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 3.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.15; transform: scale(0.8); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
+        /* Slow cosmic drifting movement for the tracking satellite */
+        @keyframes satelliteDrift {
+            0% { transform: translate(-10%, 15vh) rotate(0deg); }
+            50% { transform: translate(110vw, 45vh) rotate(180deg); }
+            100% { transform: translate(-10%, 75vh) rotate(360deg); }
+        }
+        .orbiting-satellite {
+            animation: satelliteDrift 45s infinite linear;
+        }
     </style>
 </head>
 <body>
