@@ -22,7 +22,6 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from data_flow import views as rf_views
 
-
 urlpatterns = [
     # Django Administrative Panel Portal
     path('admin/', admin.site.urls),
@@ -35,7 +34,7 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='users/password_reset_complete.html'), name='password_reset_complete'),
     path('api-attendancelog/', rf_views.process_rfid, name='process_rfid'),
-    path('generate-report/', rf_views.export_custom_date_view, name='report'),
+    path('generate-report/', rf_views.export_Attendance_Log, name='report'),
         
     # 2. WEB USER DASHBOARD INTERFACES
     path('', include('users.urls')),

@@ -2,8 +2,8 @@ from django.shortcuts import render
 import pandas as pd
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
-from .service import get_attendance_for_date
 from django.views.decorators.csrf import csrf_exempt
+from .service import push_attendance_to_sheets
 from django.http import JsonResponse
 import json
 from django.utils import timezone
@@ -13,21 +13,22 @@ from django.core.cache import cache
 
 # Create your views here.
 
-
-@staff_member_required
-def export_custom_date_view(request):
+# Use this for downloading the Excel report
+def export_Attendance_Log(request):
     selected_date = request.GET.get('date')
-    
-    # Call the service
-    data = get_attendance_for_date(selected_date)
-    
-    # If no data, handle it
-    if not data:
-        return HttpResponse("No records found for this date.")
-
-    # Convert to DataFrame
+    # Fetch data from SQLite
+    logs = AttendanceLog.objects.filter(timestamp__date=selected_date)
+    # Convert QuerySet to DataFrame
+    data = [{
+        'Name': log.teammate.name if log.teammate else 'Unknown',
+        'Time': str(log.timestamp.time()),
+        'Date': str(log.timestamp.date()),
+        'Domain': log.teammate.domain if log.teammate else 'N/A',
+        'Year': log.teammate.year if log.teammate else 'N/A',
+        'Phone number': log.teammate.phone_number if log.teammate else 'N/A',
+        'Email': log.teammate.email if log.teammate else 'N/A'
+    } for log in logs]
     df = pd.DataFrame(data)
-
     # Generate Excel response
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="Attendance_{selected_date}.xlsx"'
@@ -117,6 +118,7 @@ def process_rfid(request):
                 }, status=200)
 
             AttendanceLog.objects.create(teammate=teammate, status="Present")
+            push_attendance_to_sheets(AttendanceLog.objects.last())
             return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
 
         # 2. If unknown, create a new linked User + teammate record
@@ -153,5 +155,7 @@ def process_rfid(request):
                 'user_id': new_user.pk,
                 'teammate_id': new_teammate.pk,
             }, status=201)
+        
+       
             
     return JsonResponse({'status': 'error'}, status=400)
