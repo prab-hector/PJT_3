@@ -37,18 +37,5 @@ class UnregisteredLog(models.Model):
     rfid_number = models.CharField(max_length=8)
     timestamp = models.DateTimeField(auto_now_add=True)
 
-class PasswordResetOTP(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    used = models.BooleanField(default=False)
-
-    def is_valid(self):
-        from django.utils import timezone
-        return (not self.used) and (self.expires_at >= timezone.now())
-
-    def __str__(self):
-        return f"OTP for {self.user.username} - {'used' if self.used else 'active'}"
 
 

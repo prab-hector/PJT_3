@@ -33,24 +33,3 @@ class StorageUpdateForm(forms.ModelForm):
         fields = ['name', 'domain', 'branch', 'phone_number', 'year', 'division', 'about']
 
 
-class ForgotPasswordRequestForm(forms.Form):
-    identifier = forms.CharField(
-        label='Username or RFID',
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Enter your username or RFID',
-        }),
-        required=True,
-        help_text="Enter your username or RFID to receive an OTP at your registered email."
-    )
-
-
-class OTPVerifyForm(forms.Form):
-    code = forms.CharField(
-        label='OTP Code',
-        max_length=6,
-        min_length=4,
-        required=True,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Enter OTP code',
-        })
-    )

@@ -1,19 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-from .models import AttendanceLog, Teammates, PasswordResetOTP
+from .models import AttendanceLog, Teammates
 from django.contrib.auth.decorators import login_required
-from .forms import StorageUpdateForm, ProfileUserUpdateForm, ForgotPasswordRequestForm, OTPVerifyForm
+from .forms import StorageUpdateForm, ProfileUserUpdateForm
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import update_session_auth_hash, login as auth_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
-from datetime import datetime, timedelta
-from django.conf import settings
-from django.core.mail import send_mail
-import random
+from datetime import datetime
 from django.shortcuts import HttpResponse
-from django.urls import reverse
 
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
@@ -84,70 +80,6 @@ def set_password(request, pk): # 1. Accept pk as an argument
     return render(request, 'users/set_password.html', {'form': form})
 
 
-def forgot_password_request(request):
-    if request.method == 'POST':
-        form = ForgotPasswordRequestForm(request.POST)
-        if form.is_valid():
-            identifier = form.cleaned_data['identifier'].strip()
-            teammate = Teammates.objects.filter(rfid_number__iexact=identifier).first()
-            user = None
-            target_email = None
-
-            if teammate:
-                user = teammate.author
-                target_email = teammate.email or user.email
-            else:
-                user = User.objects.filter(username__iexact=identifier).first()
-                if user:
-                    # try to find teammate linked to user
-                    teammate = Teammates.objects.filter(author=user).first()
-                    target_email = teammate.email if teammate and teammate.email else user.email
-
-            if not user or not target_email:
-                messages.error(request, 'No user or email found for that identifier.')
-                return render(request, 'users/forgot_password.html', {'form': form})
-
-            # Invalidate existing OTPs
-            PasswordResetOTP.objects.filter(user=user, used=False).update(used=True)
-
-            # Generate OTP
-            code = str(random.randint(100000, 999999))
-            expires_at = timezone.now() + timedelta(minutes=15)
-            otp = PasswordResetOTP.objects.create(user=user, code=code, expires_at=expires_at)
-
-            subject = 'Your OTP for password reset'
-            message = f'Your OTP for resetting your password is: {code}. It expires in 15 minutes.'
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER
-            try:
-                send_mail(subject, message, from_email, [target_email], fail_silently=False)
-            except Exception as e:
-                messages.error(request, f'Failed to send email: {e}')
-                return render(request, 'users/forgot_password.html', {'form': form})
-
-            messages.success(request, 'OTP sent to your email. Please check your inbox.')
-            return redirect(reverse('verify_otp', args=[user.pk]))
-    else:
-        form = ForgotPasswordRequestForm()
-    return render(request, 'users/forgot_password.html', {'form': form})
-
-
-def verify_otp(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    if request.method == 'POST':
-        form = OTPVerifyForm(request.POST)
-        if form.is_valid():
-            code = form.cleaned_data['code'].strip()
-            otp = PasswordResetOTP.objects.filter(user=user, code=code, used=False).order_by('-created_at').first()
-            if otp and otp.is_valid():
-                otp.used = True
-                otp.save()
-                # redirect to set_password view
-                return redirect('set_password', pk=user.pk)
-            else:
-                messages.error(request, 'Invalid or expired OTP.')
-    else:
-        form = OTPVerifyForm()
-    return render(request, 'users/verify_otp.html', {'form': form, 'user': user})
 
 @login_required
 def logout(request):
