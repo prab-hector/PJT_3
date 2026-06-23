@@ -1,33 +1,9 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Page</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #050505;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* HEADER TOP NAVIGATION BAR SETUP */
-        .navbar-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #090a0f;
-            border: 1px solid #141722;
-            padding: 12px 24px;
-            border-radius: 10px;
+            {% else %}
+            <div class="attendance-empty" style="background:#0f172a; border:1px solid #111827; border-radius:16px; padding:28px; text-align:center;">
+                <p style="color:#cbd5e1; font-size:1rem;">No attendance found for {% if selected_date == today %}today{% else %}{{ selected_date|date:'F d, Y' }}{% endif %}.</p>
+            </div>
+            {% endif %}
+        </section>
             margin-bottom: 24px;
             gap: 20px;
         }
@@ -252,9 +228,9 @@
             <div class="search-filter-wrapper">
                 <input type="text" placeholder="Filter node search parameters..." autocomplete="off">
             </div>
-            <div class="date-picker-wrapper">
-                <input type="date" id="attendance-date-picker">
-            </div>
+            <form method="get" action="{% url 'homepg' %}" class="date-picker-wrapper">
+                <input type="date" id="attendance-date-picker" name="date" value="{{ selected_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" onchange="this.form.submit()">
+            </form>
         </div>
 
         {% if incomplete_profiles %}
@@ -269,13 +245,13 @@
         </div>
         {% endif %}
 
-        {% if today_scans %}
         <section class="attendance-section">
             <div class="attendance-header">
-                <h4>Today's Attendance</h4>
+                <h4>{% if selected_date == today %}Today's Attendance{% else %}Attendance for {{ selected_date|date:'F d, Y' }}{% endif %}</h4>
             </div>
+            {% if attendance_logs %}
             <div class="attendance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                {% for log in today_scans %}
+                {% for log in attendance_logs %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>
                         <div style="font-size:0.95rem; color:#cbd5e1; text-transform: uppercase; letter-spacing:0.08em; margin-bottom: 6px;">{{ log.timestamp|date:"Y-m-d" }}</div>
@@ -291,33 +267,12 @@
                 </article>
                 {% endfor %}
             </div>
-        </section>
-        {% endif %}
-
-        {% if history_scans %}
-        <section class="attendance-section">
-            <div class="attendance-header">
-                <h4>History Attendance</h4>
+            {% else %}
+            <div class="attendance-empty" style="background:#0f172a; border:1px solid #111827; border-radius:16px; padding:28px; text-align:center;">
+                <p style="color:#cbd5e1; font-size:1rem;">No attendance found for {% if selected_date == today %}today{% else %}{{ selected_date|date:'F d, Y' }}{% endif %}.</p>
             </div>
-            <div class="attendance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                {% for log in history_scans %}
-                <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                        <div style="font-size:0.95rem; color:#cbd5e1; text-transform: uppercase; letter-spacing:0.08em; margin-bottom: 6px;">{{ log.timestamp|date:"Y-m-d" }}</div>
-                        <div style="font-size:1.15rem; font-weight:700; color:#ffffff;">{% if log.teammate %}{{ log.teammate.name }}{% else %}Unknown{% endif %}</div>
-                        <div style="font-size:0.82rem; color:#94a3b8; margin-top:4px;">{{ log.timestamp|time:"H:i:s" }} • {% if log.teammate %}{{ log.teammate.rfid_number }}{% else %}No RFID{% endif %}</div>
-                    </div>
-                    <div style="margin-top:14px; display:inline-flex; align-items:center; justify-content:space-between; gap:12px;">
-                        <span style="padding:6px 10px; border-radius:999px; background: #0f172a; color:#10b981; font-size:0.86rem; font-weight:700;">{{ log.status }}</span>
-                        {% if log.teammate %}
-                        <span style="font-size:0.78rem; color:#64748b;">{{ log.teammate.branch }}</span>
-                        {% endif %}
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
+            {% endif %}
         </section>
-        {% endif %}
 
         <main class="status-container">
             <div class="status-icon">

@@ -10,17 +10,30 @@ from django.contrib.auth import logout as django_logout
 import calendar
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.models import User
+from datetime import datetime, timedelta
 
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
 # Replace 'your_hardware_app_name' with your actual app folder name (e.g., storage, rfid_datacoming, etc.)
 
 def home_dashboard(request):
-    # 1. Fetch today's attendance and older history separately
     today = timezone.localdate()
-    today_scans = AttendanceLog.objects.select_related('teammate').filter(timestamp__date=today).order_by('timestamp')
-    history_scans = AttendanceLog.objects.select_related('teammate').exclude(timestamp__date=today).order_by('-timestamp')
-    
+
+    # Delete old attendance logs older than the first day of the current month
+    first_of_month = today.replace(day=1)
+    AttendanceLog.objects.filter(timestamp__date__lt=first_of_month).delete()
+
+    selected_date_str = request.GET.get('date')
+    if selected_date_str:
+        try:
+            selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = today
+    else:
+        selected_date = today
+
+    attendance_logs = AttendanceLog.objects.select_related('teammate').filter(timestamp__date=selected_date).order_by('timestamp')
+
     # 2. Fetch incomplete profiles (Auto-created by process_rfid)
     incomplete_profiles = Teammates.objects.filter(is_fully_registered=False).order_by('-date_posted')
 
@@ -32,9 +45,10 @@ def home_dashboard(request):
     admin_initials = "".join([n[0] for n in admin_name.split() if n])[:2].upper()
 
     context = {
-        'today_scans': today_scans,
-        'history_scans': history_scans,
-        'incomplete_profiles': incomplete_profiles, # New data for your template
+        'attendance_logs': attendance_logs,
+        'selected_date': selected_date,
+        'today': today,
+        'incomplete_profiles': incomplete_profiles,
         'admin_name': admin_name,
         'admin_initials': admin_initials,
         'user': request.user,

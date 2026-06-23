@@ -80,6 +80,15 @@ def process_rfid(request):
         teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
         
         if teammate:
+            # If the teammate record is not fully registered, do not mark attendance or export to Sheets.
+            if not teammate.is_fully_registered:
+                if delete_mode_active:
+                    cache.delete('delete_mode_active')
+                return JsonResponse({
+                    'status': 'pending_registration',
+                    'message': 'User profile pending registration. Attendance will be marked after registration is complete.'
+                }, status=200)
+
             today = timezone.localdate()
             
             # If in delete mode, delete today's attendance log
@@ -152,10 +161,9 @@ def process_rfid(request):
                 author=new_user
             )
 
-            AttendanceLog.objects.create(teammate=new_teammate, status="Pending registration")
             return JsonResponse({
                 'status': 'created',
-                'message': 'Profile created and pending registration',
+                'message': 'Profile created and pending registration. Scan again after completing profile.',
                 'user_id': new_user.pk,
                 'teammate_id': new_teammate.pk,
             }, status=201)
