@@ -99,6 +99,7 @@ def edit_profile(request, pk):
         return redirect('homepg')
 
     storage_instance = get_object_or_404(Teammates, author=request.user)
+    was_pending_registration = not storage_instance.is_fully_registered
 
     if request.method == 'POST':
         # Check if the user has a password; if not, block the update
@@ -114,7 +115,34 @@ def edit_profile(request, pk):
             storage_item = s_form.save(commit=False)
             storage_item.is_fully_registered = True 
             storage_item.save()
-            messages.success(request, "Profile updated successfully!")
+
+            if was_pending_registration:
+                today = timezone.localdate()
+                attendance_log = AttendanceLog.objects.filter(
+                    teammate=storage_item,
+                    timestamp__date=today,
+                ).order_by('timestamp').first()
+
+                if attendance_log:
+                    if attendance_log.status != "Present":
+                        attendance_log.status = "Present"
+                        attendance_log.save(update_fields=['status'])
+                else:
+                    attendance_log = AttendanceLog.objects.create(
+                        teammate=storage_item,
+                        status="Present",
+                    )
+
+                try:
+                    from data_flow.service import push_attendance_to_sheets
+                    push_attendance_to_sheets(attendance_log)
+                except Exception as e:
+                    print(f"Sync Error: {e}")
+
+            if was_pending_registration:
+                messages.success(request, "Profile updated successfully! Attendance marked present.")
+            else:
+                messages.success(request, "Profile updated successfully!")
             return redirect('profile')
     else:
         u_form = ProfileUserUpdateForm(instance=request.user)

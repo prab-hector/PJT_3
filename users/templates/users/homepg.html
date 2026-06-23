@@ -1,9 +1,32 @@
-            {% else %}
-            <div class="attendance-empty" style="background:#0f172a; border:1px solid #111827; border-radius:16px; padding:28px; text-align:center;">
-                <p style="color:#cbd5e1; font-size:1rem;">No attendance found for {% if selected_date == today %}today{% else %}{{ selected_date|date:'F d, Y' }}{% endif %}.</p>
-            </div>
-            {% endif %}
-        </section>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #05070d;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .dashboard-container {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 24px 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .navbar-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
             gap: 20px;
         }
@@ -274,18 +297,16 @@
             {% endif %}
         </section>
 
-        <main class="status-container">
+        <section class="status-container">
             <div class="status-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12a7 7 0 0 1 14 0M12 9v4M12 17h.01"/>
                     <path d="M9 15a3 3 0 0 1 6 0"/>
                 </svg>
             </div>
-            <main class="status-container">
             <div class="status-title">Awaiting Orbital Stream Transmissions</div>
             <div class="status-subtitle">Waiting for data from local ESP32 ground station KJSIT/NLI</div>
-            </main>
-        </main>
+        </section>
     </div>
 
     <script>
@@ -317,7 +338,6 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             
-            datePicker.value = `${year}-${month}-${day}`;
             datePicker.max = `${year}-${month}-${day}`;
         });
     </script>
