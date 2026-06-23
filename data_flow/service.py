@@ -5,7 +5,7 @@ from django.conf import settings
 def get_spreadsheet_client():
     # Path to your JSON key file stored in settings
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(settings.GOOGLE_JSON_KEY_api, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(settings.GOOGLE_JSON_KEY_Path, scope)
     return gspread.authorize(creds)
 
 # Use this when an RFID card is scanned
