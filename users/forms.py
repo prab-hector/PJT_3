@@ -31,3 +31,14 @@ class StorageUpdateForm(forms.ModelForm):
         model = Teammates
         # This list ensures only valid teammate fields are rendered and processed
         fields = ['name', 'domain', 'branch', 'phone_number', 'year', 'division', 'about']
+
+
+class ForgotPasswordRequestForm(forms.Form):
+    identifier = forms.CharField(
+        required=True,
+        help_text="Enter your username or RFID number to receive an OTP by email."
+    )
+
+
+class OTPVerifyForm(forms.Form):
+    code = forms.CharField(required=True, max_length=6, min_length=4)
