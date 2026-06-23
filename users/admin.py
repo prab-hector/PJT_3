@@ -49,7 +49,7 @@ class AttendanceLogAdmin(admin.ModelAdmin):
                 'Name': log.teammate.name if log.teammate else 'Unknown',
                 'RFID': log.teammate.rfid_number if log.teammate else 'N/A',
                 'Branch': log.teammate.branch if log.teammate else 'N/A',
-                'Timestamp': log.timestamp,
+                'Timestamp': log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
                 'Status': log.status,
             })
         

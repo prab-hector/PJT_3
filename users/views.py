@@ -1,24 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-from .models import AttendanceLog, Teammates
+from .models import AttendanceLog, Teammates, PasswordResetOTP
 from django.contrib.auth.decorators import login_required
-from .forms import StorageUpdateForm, ProfileUserUpdateForm
+from .forms import StorageUpdateForm, ProfileUserUpdateForm, ForgotPasswordRequestForm, OTPVerifyForm
 from django.contrib.auth.forms import SetPasswordForm
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash, login as auth_login
 from django.contrib.auth import logout as django_logout
-import calendar
-from django.contrib.auth import login as auth_login
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.mail import send_mail
 import random
 from django.shortcuts import HttpResponse
-from .models import PasswordResetOTP
-from .forms import ForgotPasswordRequestForm, OTPVerifyForm
 from django.urls import reverse
-from django.contrib import messages
 
 
 # CRITICAL FIX: Import your buffer from your hardware/gateway app folder
