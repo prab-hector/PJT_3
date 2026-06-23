@@ -31,7 +31,6 @@ class AttendanceLogAdmin(admin.ModelAdmin):
     search_fields = ('teammate__name', 'teammate__rfid_number')
     readonly_fields = ('timestamp',)
     actions = ['export_to_excel']
-    change_list_template = 'admin/users/attendancelog_change_list.html'
     
     def teammate_name(self, obj):
         return obj.teammate.name if obj.teammate else "Unknown"
