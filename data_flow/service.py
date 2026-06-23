@@ -1,68 +1,25 @@
-# data_excel/services.py
-from users.models import AttendanceLog
-import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from django.conf import settings
-from pathlib import Path
-import os
-from datetime import datetime
 
+def get_spreadsheet_client():
+    # Path to your JSON key file stored in settings
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name(settings.GOOGLE_JSON_KEY_PATH, scope)
+    return gspread.authorize(creds)
 
-def get_attendance_for_date(target_date):
-    """Return a list of dicts for attendance on a given date."""
-    logs = AttendanceLog.objects.filter(timestamp__date=target_date).select_related('teammate')
-    data = [
-        {
-            "Name": (log.teammate.name if log.teammate else 'Unknown'),
-            "Date": log.timestamp.date(),
-            "Time": log.timestamp.time(),
-            "Domain": (log.teammate.domain if log.teammate else ''),
-            "Branch": (log.teammate.branch if log.teammate else ''),
-            "Phone": (log.teammate.phone_number if log.teammate else ''),
-            "Email": (log.teammate.email if log.teammate else ''),
-            "Status": log.status,
-        }
-        for log in logs
+def update_attendance_log(log):
+    client = get_spreadsheet_client()
+    # Use only the ID string, no slashes
+    sheet = client.open_by_key('1yd9KGAWrjjazzwoK-T6rWVk5074mm5IkGWbDLYOlwXw').sheet1
+
+    row_data = [
+        log.teammate.name if log.teammate else 'Unknown',      # A: Name
+        str(log.timestamp.time()),                             # B: Reporting Time
+        str(log.timestamp.date()),                             # C: Date
+        log.teammate.domain if log.teammate else 'N/A',        # D: Domain
+        log.teammate.year if log.teammate else 'N/A',          # E: Year
+        log.teammate.phone_number if log.teammate else 'N/A',  # F: Phone number
+        log.teammate.email if log.teammate else 'N/A'          # G: Email
     ]
-    return data
-
-
-def generate_monthly_report(year: int, month: int, save_dir: str = None, delete_after: bool = True):
-    """Generate an Excel report for a given month/year and optionally delete those logs.
-
-    - Saves an Excel file named Attendance_YYYY_MM.xlsx in `save_dir` or settings.BASE_DIR/reports.
-    - Returns the path to the saved file.
-    - If `delete_after` is True the AttendanceLog records for that month are deleted after successful write.
-    """
-    # Resolve save dir
-    base = Path(save_dir) if save_dir else Path(settings.BASE_DIR) / 'reports'
-    os.makedirs(base, exist_ok=True)
-
-    logs = AttendanceLog.objects.filter(timestamp__year=year, timestamp__month=month).select_related('teammate')
-    if not logs.exists():
-        return None
-
-    rows = []
-    for log in logs:
-        rows.append({
-            'ID': log.id,
-            'Name': log.teammate.name if log.teammate else 'Unknown',
-            'RFID': log.teammate.rfid_number if log.teammate else 'N/A',
-            'Branch': log.teammate.branch if log.teammate else 'N/A',
-            'Date': log.timestamp.date(),
-            'Time': log.timestamp.time(),
-            'Status': log.status,
-        })
-
-    df = pd.DataFrame(rows)
-    filename = f"Attendance_{year}_{str(month).zfill(2)}.xlsx"
-    file_path = base / filename
-
-    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Attendance')
-
-    # If asked, delete logs for that month to save storage
-    if delete_after:
-        # Only delete attendance logs, not teammates
-        logs.delete()
-
-    return str(file_path)
+    sheet.append_row(row_data)

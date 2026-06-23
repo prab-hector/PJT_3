@@ -18,19 +18,7 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-        
-        /* HEADER TOP NAVIGATION BAR SETUP */
-        .navbar-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #090a0f;
-            border: 1px solid #141722;
-            padding: 12px 24px;
-            border-radius: 10px;
-            margin-bottom: 24px;
-            gap: 20px;
-        }
+   
         .app-logo-block {
             display: flex;
             align-items: center;
@@ -258,12 +246,12 @@
         </div>
 
         {% if incomplete_profiles %}
-        <div class="incomplete-profiles">
-            <h3>Action Required: New Cards Detected</h3>
+        <div class="incomplete-profiles" style="background: #111827; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #1f2937;">
+            <h3 style="margin-bottom: 10px; font-weight: 600;">Action Required: New Cards Detected</h3>
             {% for profile in incomplete_profiles %}
-                <div class="incomplete-item">
+                <div class="incomplete-item" style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 16px; border-radius: 8px; margin-top: 10px;">
                     <span>Unregistered UID: {{ profile.rfid_number }}</span>
-                    <a href="{% url 'set_password' pk=profile.author.pk%}" class="btn-primary">Complete Profile</a>
+                    <a href="{% url 'set_password' pk=profile.author.pk %}" style="background: #2563eb; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">Complete Profile</a>
                 </div>
             {% endfor %}
         </div>
@@ -273,8 +261,8 @@
         <section class="attendance-section">
             <div class="attendance-header">
                 <h4>Today's Attendance</h4>
-                </div>
-            <div class="attendance-grid">
+            </div>
+            <div class="attendance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                 {% for log in today_scans %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>
@@ -297,9 +285,9 @@
         {% if history_scans %}
         <section class="attendance-section">
             <div class="attendance-header">
-                <h4>Today's Attendance </h4>
+                <h4>History Attendance</h4>
             </div>
-            <div class="attendance-grid">
+            <div class="attendance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
                 {% for log in history_scans %}
                 <article style="background:#081019; border:1px solid #111827; border-radius:16px; padding:18px; min-height:120px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>
@@ -332,7 +320,6 @@
     </div>
 
     <script>
-        // Star Background Generator
         document.addEventListener("DOMContentLoaded", function() {
             const starContainer = document.createElement('div');
             starContainer.style.position = 'fixed';
@@ -355,7 +342,6 @@
                 starContainer.appendChild(star);
             }
 
-            // Date Picker Logic
             const datePicker = document.getElementById("attendance-date-picker");
             const today = new Date();
             const year = today.getFullYear();

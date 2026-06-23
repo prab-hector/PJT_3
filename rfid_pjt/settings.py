@@ -156,7 +156,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Email settings - development defaults to console. Configure SMTP in production via env vars.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@example.com'
+DEFAULT_FROM_EMAIL = 'nli@somaiya.edu'
 # Example production settings (use environment variables):
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.example.com')
@@ -164,3 +164,4 @@ DEFAULT_FROM_EMAIL = 'noreply@example.com'
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+GOOGLE_JSON_KEY_PATH = os.environ.get('GOOGLE_JSON_KEY_PATH')
