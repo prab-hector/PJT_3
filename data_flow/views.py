@@ -67,14 +67,13 @@ def process_rfid(request):
 
         # 0.5. Master Delete Card Logic - Activate delete mode for next scan
         if rfid_uid == MASTER_DELETE_CARD_ID:
-            cache.set('delete_mode_active', True, 30)  # 30 second window
+            cache.set('delete_mode_active', True, 30)
             return JsonResponse({
                 'status': 'success', 
                 'message': 'Delete mode activated. Next card scan will delete today\'s attendance log.',
                 'mode': 'delete'
             }, status=200)
 
-        # Check if we're in delete mode
         delete_mode_active = cache.get('delete_mode_active', False)
 
         # 1. Check if the user is already registered
@@ -85,7 +84,7 @@ def process_rfid(request):
             
             # If in delete mode, delete today's attendance log
             if delete_mode_active:
-                cache.delete('delete_mode_active')  # Exit delete mode
+                cache.delete('delete_mode_active')
                 
                 deleted_count, _ = AttendanceLog.objects.filter(
                     teammate=teammate,
@@ -117,8 +116,13 @@ def process_rfid(request):
                     'already_marked': True
                 }, status=200)
 
-            AttendanceLog.objects.create(teammate=teammate, status="Present")
-            push_attendance_to_sheets(AttendanceLog.objects.last())
+            # Create specific log instance and sync to Google Sheets
+            new_log = AttendanceLog.objects.create(teammate=teammate, status="Present")
+            try:
+                push_attendance_to_sheets(new_log)
+            except Exception as e:
+                print(f"Sync Error: {e}")
+            
             return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
 
         # 2. If unknown, create a new linked User + teammate record
@@ -155,7 +159,5 @@ def process_rfid(request):
                 'user_id': new_user.pk,
                 'teammate_id': new_teammate.pk,
             }, status=201)
-        
-       
             
     return JsonResponse({'status': 'error'}, status=400)

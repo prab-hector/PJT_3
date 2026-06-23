@@ -13,12 +13,12 @@ def push_attendance_to_sheets(log):
     client = get_spreadsheet_client()
     sheet = client.open_by_key('1yd9KGAWrjjazzwoK-T6rWVk5074mm5IkGWbDLYOlwXw').sheet1
     row_data = [
-        log.teammate.name if log.teammate else 'Unknown',
-        str(log.timestamp.time()),
-        str(log.timestamp.date()),
-        log.teammate.domain if log.teammate else 'N/A',
-        log.teammate.year if log.teammate else 'N/A',
-        log.teammate.phone_number if log.teammate else 'N/A',
+        log.teammate.name if log.teammate else 'Unknown',      # A: Name
+        str(log.timestamp.time()),                             # B: Reporting Time
+        str(log.timestamp.date()),                             # C: Date
+        log.teammate.domain if log.teammate else 'N/A',        # D: Domain
+        log.teammate.year if log.teammate else 'N/A',          # E: Year
+        log.teammate.phone_number if log.teammate else 'N/A',  # F: Phone number
         log.teammate.email if log.teammate else 'N/A'
     ]
     sheet.append_row(row_data)
