@@ -3,7 +3,7 @@ from django.http import HttpResponse
 import pandas as pd
 from openpyxl.styles import PatternFill, Font, Alignment
 
-from .models import Teammates, AttendanceLog, 
+from .models import Teammates, AttendanceLog
 
 
 class TeammatesAdmin(admin.ModelAdmin):
