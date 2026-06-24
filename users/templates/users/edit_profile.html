@@ -60,14 +60,8 @@
             {% csrf_token %}
             
             <div class="space-y-4">
-                <h5 class="text-blue-400 font-semibold uppercase tracking-wider text-sm">Account Credentials</h5>
-                <div class="form-group">
-                    {{ u_form|crispy }}
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <h5 class="text-blue-400 font-semibold uppercase tracking-wider text-sm mt-4">Storage House Details</h5>
+                <h5 class="text-blue-400 font-semibold uppercase tracking-wider text-sm">Profile Details</h5>
+                <p class="text-zinc-500 text-sm mb-3">Your name will also become your login username and the prefix used for your email.</p>
                 <div class="form-group">
                     {{ s_form|crispy }}
                 </div>

@@ -1,9 +1,11 @@
+import random
+import re
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from .models import AttendanceLog, Teammates
 from django.contrib.auth.decorators import login_required
-from .forms import StorageUpdateForm, ProfileUserUpdateForm
+from .forms import StorageUpdateForm
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import update_session_auth_hash, login as auth_login
 from django.contrib.auth import logout as django_logout
@@ -94,6 +96,24 @@ def profile(request):
      }
      return render(request, 'users/profile.html',context)
 
+
+def _normalize_username(value):
+    username = str(value).strip().lower()
+    username = re.sub(r'[^a-z0-9._+-]+', '_', username)
+    username = re.sub(r'_+', '_', username).strip('_')
+    return username or f"user_{random.randint(1000,9999)}"
+
+
+def _generate_unique_username_from_name(name, current_user=None):
+    base = _normalize_username(name)
+    username = base
+    counter = 1
+    queryset = User.objects.exclude(pk=current_user.pk) if current_user else User.objects.all()
+    while queryset.filter(username=username).exists():
+        username = f"{base}_{counter}"
+        counter += 1
+    return username
+
 @login_required
 def edit_profile(request, pk):
     if request.user.pk != pk:
@@ -108,18 +128,19 @@ def edit_profile(request, pk):
             messages.warning(request, "You must set a password before updating your profile.")
             return redirect('homepg')
 
-        u_form = ProfileUserUpdateForm(request.POST, instance=request.user)
         s_form = StorageUpdateForm(request.POST, instance=storage_instance)
     
-        if u_form.is_valid() and s_form.is_valid():
-            u_form.save()
+        if s_form.is_valid():
             storage_item = s_form.save(commit=False)
-
-            phone_complete = storage_item.phone_number != "0000000000"
-            storage_item.is_fully_registered = phone_complete
+            storage_item.is_fully_registered = storage_item.phone_number != "0000000000"
             storage_item.save()
 
-            if phone_complete:
+            new_username = _generate_unique_username_from_name(storage_item.name, current_user=request.user)
+            request.user.username = new_username
+            request.user.email = f"{new_username}@example.com"
+            request.user.save(update_fields=['username', 'email'])
+
+            if storage_item.is_fully_registered:
                 today = timezone.localdate()
                 attendance_log = AttendanceLog.objects.filter(
                     teammate=storage_item,
@@ -142,19 +163,17 @@ def edit_profile(request, pk):
                 except Exception as e:
                     print(f"Sync Error: {e}")
 
-            if phone_complete and was_pending_registration:
+            if storage_item.is_fully_registered and was_pending_registration:
                 messages.success(request, "Profile updated successfully! Attendance marked present.")
-            elif phone_complete:
+            elif storage_item.is_fully_registered:
                 messages.success(request, "Profile updated successfully!")
             else:
                 messages.warning(request, "Profile updated, but registration is still pending until a valid phone number is provided.")
             return redirect('profile')
     else:
-        u_form = ProfileUserUpdateForm(instance=request.user)
         s_form = StorageUpdateForm(instance=storage_instance)
     
     context = {
-        'u_form': u_form,
         's_form': s_form,
         'my_storage': storage_instance,
         'user_has_password': request.user.has_usable_password()

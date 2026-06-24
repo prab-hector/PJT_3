@@ -1,17 +1,14 @@
 from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
 from users.models import Teammates
-class ProfileUserUpdateForm(forms.ModelForm):
-    email = forms.EmailField(required=True)
-    
-    class Meta:
-        model = User
-        fields = ['username','email']
 
 class StorageUpdateForm(forms.ModelForm):
-    name = forms.CharField(required=True, max_length=30)
+    name = forms.CharField(
+        required=True,
+        max_length=30,
+        label='Name / Username',
+        help_text='This name is also used to generate your login username and email prefix.',
+    )
     domain = forms.CharField(required=True)
     branch = forms.CharField(required=True)
     division = forms.CharField(required=False, max_length=30)

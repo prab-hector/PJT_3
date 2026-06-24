@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import pandas as pd
+import random
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
@@ -42,6 +43,13 @@ def export_Attendance_Log(request):
 # Define your Master IDs here
 MASTER_ENROLL_ID = "E25B2F45"
  # Admin scans this card to enter delete mode
+
+def _generate_random_username():
+    while True:
+        username = f"user_{random.randint(1000, 9999)}"
+        if not User.objects.filter(username=username).exists():
+            return username
+
 
 def _generate_unique_username(base_username):
     username = base_username
@@ -101,8 +109,7 @@ def process_rfid(request):
 
         # 2. If unknown, create a new linked User + teammate record
         else:
-            base_username = f"rfid_{rfid_uid}"
-            username = _generate_unique_username(base_username)
+            username = _generate_random_username()
             email = f"{username}@example.com"
 
             new_user = User.objects.create_user(username=username, email=email)
@@ -110,7 +117,7 @@ def process_rfid(request):
             new_user.save()
 
             new_teammate = Teammates.objects.create(
-                name="New Student",
+                name=username,
                 branch="Unassigned",
                 phone_number="0000000000",
                 year="Year",
