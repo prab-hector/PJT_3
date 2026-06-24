@@ -8,9 +8,9 @@ from .service import push_attendance_to_sheets
 from django.http import JsonResponse
 import json
 from django.utils import timezone
+from users.models import SystemState, MasterRFID
 from users.models import Teammates, AttendanceLog
 from django.contrib.auth.models import User
-from django.core.cache import cache
 
 # Create your views here.
 
@@ -41,6 +41,7 @@ def export_Attendance_Log(request):
 
 
 # Define your Master IDs here
+
 MASTER_ENROLL_ID = "E25B2F45"
 
 def _generate_random_username():
@@ -49,77 +50,111 @@ def _generate_random_username():
         if not User.objects.filter(username=username).exists():
             return username
 
-@csrf_exempt
-def process_rfid(request):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
+def get_system_state():
+    state, _ = SystemState.objects.get_or_create(pk=1)
+    return state
+
+
+def _activate_admin_mode():
+    state = get_system_state()
+    state.admin_mode_active = True
+    state.admin_mode_expires = timezone.now() + timezone.timedelta(seconds=10)
+    state.save()
+    return state
+
+
+def _consume_admin_mode():
+    state = get_system_state()
+    if not state.admin_mode_active:
+        return False
+    if state.admin_mode_expires and state.admin_mode_expires < timezone.now():
+        state.admin_mode_active = False
+        state.admin_mode_expires = None
+        state.save()
+        return False
+    state.admin_mode_active = False
+    state.admin_mode_expires = None
+    state.save()
+    return True
+
+
+def _parse_rfid_request(request):
     try:
         body = request.body.decode('utf-8')
         data = json.loads(body) if body else {}
     except Exception:
         data = request.POST.dict()
 
-    rfid_uid = data.get('rfid_id', '').strip().upper()
+    return data.get('rfid_id', '').strip().upper()
+
+
+@csrf_exempt
+def process_rfid(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    rfid_uid = _parse_rfid_request(request)
     if not rfid_uid:
         return JsonResponse({'status': 'error', 'message': 'Missing rfid_id'}, status=400)
 
-    teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
-    
-    # 1. Master ID Check
-    if rfid_uid == MASTER_ENROLL_ID:
-        cache.set('admin_mode_active', True, timeout=70)
-        return JsonResponse({'status': 'success', 'message': 'Admin Mode: Scan next card to modify.'})
-    
-    # 2. Admin Mode (Delete/Create)
-    elif cache.get('admin_mode_active'):
-        cache.delete('admin_mode_active')
-        
-        if teammate:
-            if teammate.is_fully_registered:
-                teammate.author.delete() # Ensure Cascade is set in model
-                return JsonResponse({'status': 'success', 'message': 'User deleted.'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'Cannot delete: User not fully registered.'}, status=400)
-        
-        else:
-            # Create new user logic
-            username = _generate_random_username()
-            email = f"nli{random.randint(1000,9999)}@gmail.com"
-            new_user = User.objects.create_user(username=username, email=email)
-            new_user.set_unusable_password()
-            new_user.save()
-            new_teammate = Teammates.objects.create(
-                name=username,
-                email=email,
-                branch="Unassigned",
-                phone_number="0000000000",
-                year="Year",
-                rfid_number=rfid_uid,
-                is_fully_registered=False,
-                author=new_user
-            )
-            return JsonResponse({
-                'status': 'created',
-                'message': 'Profile created. Scan again after completing profile.',
-                'user_id': new_user.pk,
-                'teammate_id': new_teammate.pk,
-            }, status=201)
+    # Master-card scan enters admin mode
+    if MasterRFID.objects.filter(rfid_number=rfid_uid).exists():
+        _activate_admin_mode()
+        return JsonResponse({
+            'status': 'admin_mode',
+            'message': 'Master card recognized. Scan the target card to register or delete.',
+        }, status=200)
 
-    # 3. Regular Attendance Mode
-    elif teammate:
+    teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
+
+    # Admin mode: create new card or delete existing card
+    if _consume_admin_mode():
+        if teammate:
+            teammate.author.delete()
+            return JsonResponse({
+                'status': 'deleted',
+                'message': 'User deleted completely from the system.',
+            }, status=200)
+
+        username = _generate_random_username()
+        email = f"nli{random.randint(1000,9999)}@gmail.com"
+        new_user = User.objects.create_user(username=username, email=email)
+        new_user.set_unusable_password()
+        new_user.save()
+
+        new_teammate = Teammates.objects.create(
+            name=username,
+            email=email,
+            branch="Unassigned",
+            phone_number="0000000000",
+            year="Year",
+            rfid_number=rfid_uid,
+            is_fully_registered=False,
+            author=new_user
+        )
+
+        return JsonResponse({
+            'status': 'created',
+            'message': 'New user placeholder created. Complete registration before normal attendance.',
+            'user_id': new_user.pk,
+            'teammate_id': new_teammate.pk,
+        }, status=201)
+
+    # Normal attendance flow
+    if teammate:
         if not teammate.is_fully_registered or teammate.phone_number == "0000000000":
             return JsonResponse({
                 'status': 'pending_registration',
-                'message': 'Registration pending: complete your profile',
+                'message': 'Registration pending: complete your profile before marking attendance.',
             }, status=200)
-        
+
         today = timezone.localdate()
         if AttendanceLog.objects.filter(teammate=teammate, timestamp__date=today).exists():
             return JsonResponse({
                 'status': 'success',
-                'message': 'Attendance already marked for today',
-                'already_marked': True
+                'message': 'Attendance already marked for today.',
+                'already_marked': True,
             }, status=200)
 
         new_log = AttendanceLog.objects.create(teammate=teammate, status="Present")
@@ -127,8 +162,15 @@ def process_rfid(request):
             push_attendance_to_sheets(new_log)
         except Exception as e:
             print(f"Sync Error: {e}")
-        return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
-            
-    else:
-        return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+
+        return JsonResponse({'status': 'success', 'message': 'Attendance marked.'}, status=200)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'User not found. Scan master card to create this card or use a registered card for attendance.',
+    }, status=404)
+        
     
+
+        
+
