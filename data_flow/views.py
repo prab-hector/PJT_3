@@ -55,11 +55,15 @@ def process_rfid(request):
         return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
     try:
-        data = json.loads(request.body)
-        rfid_uid = data.get('rfid_id', '').strip().upper()
+        body = request.body.decode('utf-8')
+        data = json.loads(body) if body else {}
     except Exception:
-        return JsonResponse({'status': 'error', 'message': 'JSON Error'}, status=400)
-    
+        data = request.POST.dict()
+
+    rfid_uid = data.get('rfid_id', '').strip().upper()
+    if not rfid_uid:
+        return JsonResponse({'status': 'error', 'message': 'Missing rfid_id'}, status=400)
+
     teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
     
     # 1. Master ID Check

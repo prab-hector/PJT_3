@@ -178,7 +178,7 @@ GOOGLE_JSON_KEY_PATH = os.environ.get('GOOGLE_JSON_KEY_PATH')
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'attendance-system-cache',
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'cache',
     }
 }
