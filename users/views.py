@@ -114,10 +114,12 @@ def edit_profile(request, pk):
         if u_form.is_valid() and s_form.is_valid():
             u_form.save()
             storage_item = s_form.save(commit=False)
-            storage_item.is_fully_registered = True 
+
+            phone_complete = storage_item.phone_number != "0000000000"
+            storage_item.is_fully_registered = phone_complete
             storage_item.save()
 
-            if was_pending_registration:
+            if phone_complete:
                 today = timezone.localdate()
                 attendance_log = AttendanceLog.objects.filter(
                     teammate=storage_item,
@@ -140,10 +142,12 @@ def edit_profile(request, pk):
                 except Exception as e:
                     print(f"Sync Error: {e}")
 
-            if was_pending_registration:
+            if phone_complete and was_pending_registration:
                 messages.success(request, "Profile updated successfully! Attendance marked present.")
-            else:
+            elif phone_complete:
                 messages.success(request, "Profile updated successfully!")
+            else:
+                messages.warning(request, "Profile updated, but registration is still pending until a valid phone number is provided.")
             return redirect('profile')
     else:
         u_form = ProfileUserUpdateForm(instance=request.user)

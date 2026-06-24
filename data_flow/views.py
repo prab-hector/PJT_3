@@ -41,7 +41,7 @@ def export_Attendance_Log(request):
 
 # Define your Master IDs here
 MASTER_ENROLL_ID = "E25B2F45"
-MASTER_DELETE_CARD_ID = "893997C1"  # Admin scans this card to enter delete mode
+ # Admin scans this card to enter delete mode
 
 def _generate_unique_username(base_username):
     username = base_username
@@ -65,52 +65,17 @@ def process_rfid(request):
         if rfid_uid == MASTER_ENROLL_ID:
             return JsonResponse({'status': 'success', 'message': 'Enrollment Gateway Open'}, status=200)
 
-        # 0.5. Master Delete Card Logic - Activate delete mode for next scan
-        if rfid_uid == MASTER_DELETE_CARD_ID:
-            cache.set('delete_mode_active', True, 30)
-            return JsonResponse({
-                'status': 'success', 
-                'message': 'Delete mode activated. Next card scan will delete today\'s attendance log.',
-                'mode': 'delete'
-            }, status=200)
-
-        delete_mode_active = cache.get('delete_mode_active', False)
-
         # 1. Check if the user is already registered
         teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
         
         if teammate:
-            # If the teammate record is not fully registered, do not mark attendance or export to Sheets.
-            if not teammate.is_fully_registered:
-                if delete_mode_active:
-                    cache.delete('delete_mode_active')
+            if not teammate.is_fully_registered or teammate.phone_number == "0000000000":
                 return JsonResponse({
                     'status': 'pending_registration',
-                    'message': 'User profile pending registration. Attendance will be marked after registration is complete.'
+                    'message': 'Registration pending: complete your profile with a valid phone number before attendance can be recorded.',
                 }, status=200)
 
             today = timezone.localdate()
-            
-            # If in delete mode, delete today's attendance log
-            if delete_mode_active:
-                cache.delete('delete_mode_active')
-                
-                deleted_count, _ = AttendanceLog.objects.filter(
-                    teammate=teammate,
-                    timestamp__date=today
-                ).delete()
-                
-                if deleted_count > 0:
-                    return JsonResponse({
-                        'status': 'success',
-                        'message': f'Deleted {deleted_count} attendance log(s) for today',
-                        'action': 'deleted'
-                    }, status=200)
-                else:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': 'No attendance log found for today to delete',
-                    }, status=400)
             
             # Normal mode - add attendance
             same_day_log_exists = AttendanceLog.objects.filter(
@@ -136,13 +101,6 @@ def process_rfid(request):
 
         # 2. If unknown, create a new linked User + teammate record
         else:
-            if delete_mode_active:
-                cache.delete('delete_mode_active')
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Cannot delete: Unknown RFID card. User not registered.'
-                }, status=400)
-
             base_username = f"rfid_{rfid_uid}"
             username = _generate_unique_username(base_username)
             email = f"{username}@example.com"
