@@ -7,7 +7,12 @@ class StorageUpdateForm(forms.ModelForm):
         required=True,
         max_length=30,
         label='Name / Username',
-        help_text='This name is also used to generate your login username and email prefix.',
+        help_text='This name is used to generate your login username.',
+    )
+    email = forms.EmailField(
+        required=True,
+        label='Email',
+        help_text='Set your preferred email address here.',
     )
     domain = forms.CharField(required=True)
     branch = forms.CharField(required=True)
@@ -27,6 +32,6 @@ class StorageUpdateForm(forms.ModelForm):
     class Meta:
         model = Teammates
         # This list ensures only valid teammate fields are rendered and processed
-        fields = ['name', 'domain', 'branch', 'phone_number', 'year', 'division', 'about']
+        fields = ['name', 'email', 'domain', 'branch', 'phone_number', 'year', 'division', 'about']
 
 

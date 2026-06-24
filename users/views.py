@@ -137,7 +137,7 @@ def edit_profile(request, pk):
 
             new_username = _generate_unique_username_from_name(storage_item.name, current_user=request.user)
             request.user.username = new_username
-            request.user.email = f"{new_username}@example.com"
+            request.user.email = storage_item.email
             request.user.save(update_fields=['username', 'email'])
 
             if storage_item.is_fully_registered:

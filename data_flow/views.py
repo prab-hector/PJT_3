@@ -110,7 +110,7 @@ def process_rfid(request):
         # 2. If unknown, create a new linked User + teammate record
         else:
             username = _generate_random_username()
-            email = f"{username}@example.com"
+            email = f"nli{random.randint(1000,9999)}@gmail.com"
 
             new_user = User.objects.create_user(username=username, email=email)
             new_user.set_unusable_password()
@@ -118,6 +118,7 @@ def process_rfid(request):
 
             new_teammate = Teammates.objects.create(
                 name=username,
+                email=email,
                 branch="Unassigned",
                 phone_number="0000000000",
                 year="Year",
