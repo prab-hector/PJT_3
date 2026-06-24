@@ -42,7 +42,6 @@ def export_Attendance_Log(request):
 
 # Define your Master IDs here
 MASTER_ENROLL_ID = "E25B2F45"
- # Admin scans this card to enter delete mode
 
 def _generate_random_username():
     while True:
@@ -52,60 +51,40 @@ def _generate_random_username():
 
 @csrf_exempt
 def process_rfid(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            rfid_uid = data.get('rfid_id', '').strip().upper()
-        except Exception:
-            return JsonResponse({'status': 'error', 'message': 'JSON Error'}, status=400)
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
-        # 0. Master Enroll Card Logic
-        if rfid_uid == MASTER_ENROLL_ID:
-            return JsonResponse({'status': 'success', 'message': 'Enrollment Gateway Open'}, status=200)
-
-        # 1. Check if the user is already registered
-        teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
+    try:
+        data = json.loads(request.body)
+        rfid_uid = data.get('rfid_id', '').strip().upper()
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'JSON Error'}, status=400)
+    
+    teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
+    
+    # 1. Master ID Check
+    if rfid_uid == MASTER_ENROLL_ID:
+        cache.set('admin_mode_active', True, timeout=70)
+        return JsonResponse({'status': 'success', 'message': 'Admin Mode: Scan next card to modify.'})
+    
+    # 2. Admin Mode (Delete/Create)
+    elif cache.get('admin_mode_active'):
+        cache.delete('admin_mode_active')
         
         if teammate:
-            if not teammate.is_fully_registered or teammate.phone_number == "0000000000":
-                return JsonResponse({
-                    'status': 'pending_registration',
-                    'message': 'Registration pending: complete your profile with a valid phone number before attendance can be recorded.',
-                }, status=200)
-
-            today = timezone.localdate()
-            
-            # Normal mode - add attendance
-            same_day_log_exists = AttendanceLog.objects.filter(
-                teammate=teammate,
-                timestamp__date=today
-            ).exists()
-
-            if same_day_log_exists:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Attendance already marked for today',
-                    'already_marked': True
-                }, status=200)
-
-            # Create specific log instance and sync to Google Sheets
-            new_log = AttendanceLog.objects.create(teammate=teammate, status="Present")
-            try:
-                push_attendance_to_sheets(new_log)
-            except Exception as e:
-                print(f"Sync Error: {e}")
-            
-            return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
-
-        # 2. If unknown, create a new linked User + teammate record
+            if teammate.is_fully_registered:
+                teammate.author.delete() # Ensure Cascade is set in model
+                return JsonResponse({'status': 'success', 'message': 'User deleted.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Cannot delete: User not fully registered.'}, status=400)
+        
         else:
+            # Create new user logic
             username = _generate_random_username()
             email = f"nli{random.randint(1000,9999)}@gmail.com"
-
             new_user = User.objects.create_user(username=username, email=email)
             new_user.set_unusable_password()
             new_user.save()
-
             new_teammate = Teammates.objects.create(
                 name=username,
                 email=email,
@@ -116,12 +95,36 @@ def process_rfid(request):
                 is_fully_registered=False,
                 author=new_user
             )
-
             return JsonResponse({
                 'status': 'created',
-                'message': 'Profile created and pending registration. Scan again after completing profile.',
+                'message': 'Profile created. Scan again after completing profile.',
                 'user_id': new_user.pk,
                 'teammate_id': new_teammate.pk,
             }, status=201)
+
+    # 3. Regular Attendance Mode
+    elif teammate:
+        if not teammate.is_fully_registered or teammate.phone_number == "0000000000":
+            return JsonResponse({
+                'status': 'pending_registration',
+                'message': 'Registration pending: complete your profile',
+            }, status=200)
+        
+        today = timezone.localdate()
+        if AttendanceLog.objects.filter(teammate=teammate, timestamp__date=today).exists():
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Attendance already marked for today',
+                'already_marked': True
+            }, status=200)
+
+        new_log = AttendanceLog.objects.create(teammate=teammate, status="Present")
+        try:
+            push_attendance_to_sheets(new_log)
+        except Exception as e:
+            print(f"Sync Error: {e}")
+        return JsonResponse({'status': 'success', 'message': 'Attendance Marked'}, status=200)
             
-    return JsonResponse({'status': 'error'}, status=400)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+    
