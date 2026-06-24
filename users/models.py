@@ -41,6 +41,3 @@ class UnregisteredLog(models.Model):
 class SystemState(models.Model):
     admin_mode_active = models.BooleanField(default=False)
     admin_mode_expires = models.DateTimeField(null=True, blank=True)
-
-class MasterRFID(models.Model):
-    rfid_number = models.CharField(max_length=8, unique=True, db_index=True)

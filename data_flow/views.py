@@ -8,7 +8,7 @@ from .service import push_attendance_to_sheets
 from django.http import JsonResponse
 import json
 from django.utils import timezone
-from users.models import SystemState, MasterRFID
+from users.models import SystemState
 from users.models import Teammates, AttendanceLog
 from django.contrib.auth.models import User
 
@@ -99,7 +99,7 @@ def process_rfid(request):
         return JsonResponse({'status': 'error', 'message': 'Missing rfid_id'}, status=400)
 
     # Master-card scan enters admin mode
-    if MasterRFID.objects.filter(rfid_number=rfid_uid).exists():
+    if rfid_uid == MASTER_ENROLL_ID:
         _activate_admin_mode()
         return JsonResponse({
             'status': 'admin_mode',
