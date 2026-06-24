@@ -86,7 +86,10 @@ def _parse_rfid_request(request):
     except Exception:
         data = request.POST.dict()
 
-    return data.get('rfid_id', '').strip().upper()
+    return {
+        'rfid_id': data.get('rfid_id', '').strip().upper(),
+        'mode': data.get('mode', '').strip().lower(),
+    }
 
 
 @csrf_exempt
@@ -94,7 +97,10 @@ def process_rfid(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
-    rfid_uid = _parse_rfid_request(request)
+    payload = _parse_rfid_request(request)
+    rfid_uid = payload['rfid_id']
+    mode = payload['mode']
+
     if not rfid_uid:
         return JsonResponse({'status': 'error', 'message': 'Missing rfid_id'}, status=400)
 
@@ -109,7 +115,7 @@ def process_rfid(request):
     teammate = Teammates.objects.filter(rfid_number=rfid_uid).first()
 
     # Admin mode: create new card or delete existing card
-    if _consume_admin_mode():
+    if mode == 'admin' or _consume_admin_mode():
         if teammate:
             teammate.author.delete()
             return JsonResponse({
