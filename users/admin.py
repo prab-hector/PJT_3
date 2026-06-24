@@ -3,7 +3,7 @@ from django.http import HttpResponse
 import pandas as pd
 from openpyxl.styles import PatternFill, Font, Alignment
 
-from .models import Teammates, AttendanceLog, MasterRFID
+from .models import Teammates, AttendanceLog, 
 
 
 class TeammatesAdmin(admin.ModelAdmin):
@@ -77,4 +77,4 @@ class AttendanceLogAdmin(admin.ModelAdmin):
 
 admin.site.register(Teammates, TeammatesAdmin)
 admin.site.register(AttendanceLog, AttendanceLogAdmin)
-admin.site.register(MasterRFID)
+
