@@ -119,19 +119,29 @@ def edit_profile(request, pk):
     if request.user.pk != pk:
         return redirect('homepg')
 
-    storage_instance = get_object_or_404(Teammates, author=request.user)
+    storage_instance = Teammates.objects.filter(author=request.user).first()
+    if storage_instance is None:
+        storage_instance = Teammates(
+            author=request.user,
+            rfid_number=f"T{request.user.pk:07d}",
+            phone_number="0000000000",
+            is_fully_registered=False,
+        )
     was_pending_registration = not storage_instance.is_fully_registered
 
     if request.method == 'POST':
-        # Check if the user has a password; if not, block the update
         if not request.user.has_usable_password():
             messages.warning(request, "You must set a password before updating your profile.")
             return redirect('homepg')
 
         s_form = StorageUpdateForm(request.POST, instance=storage_instance)
-    
+
         if s_form.is_valid():
             storage_item = s_form.save(commit=False)
+            if not storage_item.author_id:
+                storage_item.author = request.user
+            if not storage_item.rfid_number:
+                storage_item.rfid_number = f"T{request.user.pk:07d}"
             storage_item.is_fully_registered = storage_item.phone_number != "0000000000"
             storage_item.save()
 
@@ -172,7 +182,7 @@ def edit_profile(request, pk):
             return redirect('profile')
     else:
         s_form = StorageUpdateForm(instance=storage_instance)
-    
+
     context = {
         's_form': s_form,
         'my_storage': storage_instance,
